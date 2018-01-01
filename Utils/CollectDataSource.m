@@ -1,0 +1,112 @@
+//
+//  CollectDataSource.m
+//  yzyx
+//
+//  Created by xuemiyang on 2017/12/20.
+//  Copyright © 2017年 TCLios2. All rights reserved.
+//
+
+#import "CollectDataSource.h"
+#import <objc/runtime.h>
+
+@implementation CollectItem
+- (instancetype)initWithCellClass:(Class)cellClass {
+    if (self = [super init]) {
+        _identifier = NSStringFromClass(cellClass);
+        _cellClass = cellClass;
+    }
+    return self;
+}
+@end
+
+@implementation CollectDataSource
+- (instancetype)init {
+    if (self = [super init]) {
+        _rows = @[];
+        _items = @[];
+    }
+    return self;
+}
+
+#pragma mark - private
+- (NSUInteger)_indexAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.section >= _rows.count) {
+        return NSNotFound;
+    }
+    NSUInteger index = 0;
+    for (int i=0; i<indexPath.section; i++) {
+        index += _rows[i].integerValue;
+    }
+    index += indexPath.row;
+    return index;
+}
+
+- (void)_setItem:(CollectItem *)item toCell:(UICollectionViewCell *)cell {
+    if (item.extendDic && item.cellClass) {
+        Class cls = item.cellClass;
+        while (cls) {
+            unsigned int outCount = 0;
+            objc_property_t *propertys = class_copyPropertyList(cls, &outCount);
+            for (int i=0; i<outCount; i++) {
+                objc_property_t property = propertys[i];
+                const char *name = property_getName(property);
+                if (!name) {
+                    continue;
+                }
+                NSString *key = [NSString stringWithUTF8String:name];
+                if (!key) {
+                    continue;
+                }
+                id value = item.extendDic[key];
+                if (value) {
+                    [cell setValue:value forKey:key];
+                }
+            }
+            free(propertys);
+            cls = class_getSuperclass(cls);
+        }
+    }
+}
+
+#pragma mark - public
+- (CollectItem *)itemAtIndexPath:(NSIndexPath *)indexPath {
+    NSUInteger index = [self _indexAtIndexPath:indexPath];
+    if (index == NSNotFound || index >= _items.count) {
+        return nil;
+    }
+    return _items[index];
+}
+
+#pragma mark - UICollectionViewDataSource
+- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
+    _collectionView = collectionView;
+    return _rows.count;
+}
+
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
+    return _rows[section].integerValue;
+}
+
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+    CollectItem *item = [self itemAtIndexPath:indexPath];
+    UICollectionViewCell *cell;
+    if (item.identifier) {
+        [collectionView registerNib:[UINib nibWithNibName:item.identifier bundle:nil] forCellWithReuseIdentifier:item.identifier];
+        cell = [collectionView dequeueReusableCellWithReuseIdentifier:item.identifier forIndexPath:indexPath];
+        [self _setItem:item toCell:cell];
+        if (_delegate && [_delegate respondsToSelector:@selector(collectDataSource:withCell:cellForRowAtIndexPath:)]) {
+            [_delegate collectDataSource:self withCell:cell cellForRowAtIndexPath:indexPath];
+        }
+    }
+    return cell;
+}
+
+
+@end
+
+
+
+
+
+
+
