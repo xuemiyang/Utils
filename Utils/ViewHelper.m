@@ -8,7 +8,7 @@
 
 #import "ViewHelper.h"
 #import "Category.h"
-#import <MJRefresh.h>
+//#import <MJRefresh.h>
 
 @implementation TableViewHelper
 @synthesize context = _context;
@@ -73,18 +73,18 @@
 
 - (void)setupView {
     [super setupView];
-    __weak typeof(self) weakSelf = self;
-    MJRefreshHeader *header = [MJRefreshNormalHeader headerWithRefreshingBlock:^{
-        [weakSelf.tableView.mj_header endRefreshing];
-        weakSelf.pageNum = 1;
-        [weakSelf updateTableView];
-    }];
-    self.tableView.mj_header = header;
-    MJRefreshFooter *footer = [MJRefreshAutoFooter footerWithRefreshingBlock:^{
-        [weakSelf.tableView.mj_footer endRefreshing];
-        [weakSelf updateTableView];
-    }];
-    self.tableView.mj_footer = footer;
+//    __weak typeof(self) weakSelf = self;
+//    MJRefreshHeader *header = [MJRefreshNormalHeader headerWithRefreshingBlock:^{
+//        [weakSelf.tableView.mj_header endRefreshing];
+//        weakSelf.pageNum = 1;
+//        [weakSelf updateTableView];
+//    }];
+//    self.tableView.mj_header = header;
+//    MJRefreshFooter *footer = [MJRefreshAutoFooter footerWithRefreshingBlock:^{
+//        [weakSelf.tableView.mj_footer endRefreshing];
+//        [weakSelf updateTableView];
+//    }];
+//    self.tableView.mj_footer = footer;
 }
 
 - (void)reloadTableView {
@@ -173,18 +173,18 @@
 
 - (void)setupView {
     [super setupView];
-    __weak typeof(self) weakSelf = self;
-    MJRefreshHeader *header = [MJRefreshNormalHeader headerWithRefreshingBlock:^{
-        [weakSelf.collectionView.mj_header endRefreshing];
-        weakSelf.pageNum = 1;
-        [weakSelf updateCollectionView];
-    }];
-    self.collectionView.mj_header = header;
-    MJRefreshFooter *footer = [MJRefreshAutoFooter footerWithRefreshingBlock:^{
-        [weakSelf.collectionView.mj_footer endRefreshing];
-        [weakSelf updateCollectionView];
-    }];
-    self.collectionView.mj_footer = footer;
+//    __weak typeof(self) weakSelf = self;
+//    MJRefreshHeader *header = [MJRefreshNormalHeader headerWithRefreshingBlock:^{
+//        [weakSelf.collectionView.mj_header endRefreshing];
+//        weakSelf.pageNum = 1;
+//        [weakSelf updateCollectionView];
+//    }];
+//    self.collectionView.mj_header = header;
+//    MJRefreshFooter *footer = [MJRefreshAutoFooter footerWithRefreshingBlock:^{
+//        [weakSelf.collectionView.mj_footer endRefreshing];
+//        [weakSelf updateCollectionView];
+//    }];
+//    self.collectionView.mj_footer = footer;
 }
 
 - (void)updateCollectionView {

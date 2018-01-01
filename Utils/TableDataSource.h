@@ -18,11 +18,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSString *title;
 @property (nonatomic, strong, nullable) UIColor *titleColor;
 @property (nonatomic, copy, nullable) NSString *detail;
+@property (nonatomic, strong, nullable) UIColor *detailColor;
 @property (nonatomic, assign) UITableViewCellAccessoryType accessoryType;
 @property (nonatomic, copy, nullable) UIView *(^accessoryView)(void);
 /// default value 44
 @property (nonatomic, assign) CGFloat height;
-@property (nonatomic, strong, nullable) NSDictionary<NSString *, id> *extendDic;
+@property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, id> *extendDic;
 - (instancetype)initWithCellClass:(Class)cellClass;
 @end
 

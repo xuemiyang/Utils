@@ -43,7 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ListTableViewHelper: TableViewHelper
 @property (nonatomic, assign, readonly) NSInteger pageNum;
-/// handler(count) count load date count
+/// handler(count) count load data count
 @property (nonatomic, copy) void (^updateTableViewForPageNumber)(NSUInteger pageNo, void (^handler)(NSUInteger count));
 - (void)reloadTableView;
 @end
@@ -59,7 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ListCollectionViewHelper: CollectionViewHelper
 @property (nonatomic, assign, readonly) NSInteger pageNum;
-/// handler(count) count load date count
+/// handler(count) count load data count
 @property (nonatomic, copy) void (^updateCollectionViewForPageNumber)(NSInteger pageNo, void (^handler)(NSUInteger count));
 @end
 

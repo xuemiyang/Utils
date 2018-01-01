@@ -56,6 +56,9 @@
     if (item.titleColor) {
         cell.textLabel.textColor = item.titleColor;
     }
+    if (item.detailColor) {
+        cell.detailTextLabel.textColor = item.detailColor;
+    }
     if (item.accessoryView) {
         cell.accessoryView = item.accessoryView();
     } else {
