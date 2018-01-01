@@ -81,7 +81,7 @@ iOS项目工具类集合。
 ```
 
 ## CollectDataSource
-### 1. 使用实现协议<CollectionItemsFactoryProtocol>的CollectItem工程类创建CollectItem
+### 1. 使用实现协议<CollectionItemsFactoryProtocol>的CollectItem工厂类创建CollectItem
 ```objc
 @interface MyCollectItemsFactory : NSObject <CollectionItemsFactoryProtocol>
 
@@ -137,7 +137,7 @@ tagsView.view = @[];
 // 建立
 [tagsView setup];
 ```
-### 2. TagsView的使用方法。
+### 2. TagsView的常用方法。
 ```objc
 /// 选择对应的tag，是否带动画。
 - (void)selectTagAtIndex:(NSUInteger)index animated:(BOOL)animated;
