@@ -122,6 +122,182 @@
     UIGraphicsEndImageContext();
     return image;
 }
+
++ (UIImage *)xm_QRImageWithString:(NSString *)string size:(CGSize)size {
+    /**
+     "CIAttributeFilterAvailable_Mac" = "10.9";
+     "CIAttributeFilterAvailable_iOS" = 7;
+     CIAttributeFilterCategories =     (
+        CICategoryGenerator,
+        CICategoryStillImage,
+        CICategoryBuiltIn
+     );
+     CIAttributeFilterDisplayName = "QRCode Generator";
+     CIAttributeFilterName = CIQRCodeGenerator;
+     CIAttributeReferenceDocumentation = "http://developer.apple.com/library/ios/documentation/GraphicsImaging/Reference/CoreImageFilterReference/index.html#//apple_ref/doc/filter/ci/CIQRCodeGenerator";
+     inputCorrectionLevel =     {
+        CIAttributeClass = NSString;
+        CIAttributeDefault = M;
+        CIAttributeDescription = "QRCode correction level L, M, Q, or H.";
+        CIAttributeDisplayName = CorrectionLevel;
+     };
+     inputMessage =     {
+        CIAttributeClass = NSData;
+        CIAttributeDisplayName = Message;
+     };
+     */
+    CIFilter *filter = [CIFilter filterWithName:@"CIQRCodeGenerator"];
+    
+    [filter setDefaults];
+    NSData *data = [string dataUsingEncoding:NSUTF8StringEncoding];
+    [filter setValue:data forKey:@"inputMessage"];
+    [filter setValue:@"H" forKey:@"inputCorrectionLevel"];
+    CIImage *image = [filter outputImage];
+    return [self _hdImageWithCIImage:image size:size];
+}
+
++ (UIImage *)xm_QRImageWithString:(NSString *)string size:(CGSize)size QRColor:(UIColor *)QRColor backgroundColor:(UIColor *)backgroundColor {
+    CIFilter *filter = [CIFilter filterWithName:@"CIQRCodeGenerator"];
+    
+    [filter setDefaults];
+    NSData *data = [string dataUsingEncoding:NSUTF8StringEncoding];
+    [filter setValue:data forKey:@"inputMessage"];
+    [filter setValue:@"H" forKey:@"inputCorrectionLevel"];
+    CIImage *image = [filter outputImage];
+    return [self _hdImageWithCIImage:image size:size QRColor:QRColor backgroundColor:backgroundColor];
+}
+
++ (UIImage *)_hdImageWithCIImage:(CIImage *)ciImage size:(CGSize)size {
+    CGRect extent = CGRectIntegral(ciImage.extent);
+    CGFloat scale = MIN(size.width / extent.size.width, size.height / extent.size.height);
+    size_t width = extent.size.width * scale;
+    size_t height = extent.size.height * scale;
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceGray();
+    CGContextRef bitmapContext = CGBitmapContextCreate(NULL, width, height, 8, 0, colorSpace, (CGBitmapInfo)kCGImageAlphaNone);
+    CGImageRef cgImage = [[CIContext context] createCGImage:ciImage fromRect:extent];
+    CGContextSetInterpolationQuality(bitmapContext, kCGInterpolationNone);
+    CGContextScaleCTM(bitmapContext, scale, scale);
+    CGContextDrawImage(bitmapContext, extent, cgImage);
+    CGImageRef scaledImage = CGBitmapContextCreateImage(bitmapContext);
+    CGImageRelease(cgImage);
+    CGContextRelease(bitmapContext);
+    CGColorSpaceRelease(colorSpace);
+    UIImage *image = [UIImage imageWithCGImage:scaledImage];
+    return image;
+}
+
++ (UIImage *)_hdImageWithCIImage:(CIImage *)ciImage size:(CGSize)size QRColor:(UIColor *)QRColor backgroundColor:(UIColor *)backgroundColor {
+    /**
+     "CIAttributeFilterAvailable_Mac" = "10.4";
+     "CIAttributeFilterAvailable_iOS" = 5;
+     CIAttributeFilterCategories =     (
+        CICategoryColorEffect,
+        CICategoryVideo,
+        CICategoryInterlaced,
+        CICategoryNonSquarePixels,
+        CICategoryStillImage,
+        CICategoryBuiltIn
+     );
+     CIAttributeFilterDisplayName = "False Color";
+     CIAttributeFilterName = CIFalseColor;
+     CIAttributeReferenceDocumentation = "http://developer.apple.com/library/ios/documentation/GraphicsImaging/Reference/CoreImageFilterReference/index.html#//apple_ref/doc/filter/ci/CIFalseColor";
+     inputColor0 =     {
+        CIAttributeClass = CIColor;
+        CIAttributeDefault = "(0.3 0 0 1) <CGColorSpace 0x1c00b6d40> (kCGColorSpaceDeviceRGB)";
+        CIAttributeDescription = "The first color to use for the color ramp.";
+        CIAttributeDisplayName = "Color 1";
+        CIAttributeType = CIAttributeTypeColor;
+     };
+     inputColor1 =     {
+        CIAttributeClass = CIColor;
+        CIAttributeDefault = "(1 0.9 0.8 1) <CGColorSpace 0x1c00b6d40> (kCGColorSpaceDeviceRGB)";
+        CIAttributeDescription = "The second color to use for the color ramp.";
+        CIAttributeDisplayName = "Color 2";
+        CIAttributeType = CIAttributeTypeColor;
+     };
+     inputImage =     {
+        CIAttributeClass = CIImage;
+        CIAttributeDescription = "The image to use as an input image. For filters that also use a background image, this is the foreground image.";
+        CIAttributeDisplayName = Image;
+        CIAttributeType = CIAttributeTypeImage;
+     };
+     */
+    CIFilter *filter = [CIFilter filterWithName:@"CIFalseColor" keysAndValues:@"inputImage", ciImage, @"inputColor0", [CIColor colorWithCGColor:QRColor.CGColor], @"inputColor1", [CIColor colorWithCGColor:backgroundColor.CGColor], nil];
+    CIImage *colorCIImage = [filter outputImage];
+    CGImageRef cgImage = [[CIContext context] createCGImage:colorCIImage fromRect:CGRectIntegral(colorCIImage.extent)];
+    UIGraphicsBeginImageContext(size);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextSetInterpolationQuality(context, kCGInterpolationNone);
+    CGContextScaleCTM(context, 1, -1);
+    CGContextDrawImage(context, CGContextGetClipBoundingBox(context), cgImage);
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    CGImageRelease(cgImage);
+    return image;
+}
+
+- (UIImage *)xm_addWaterImage:(UIImage *)waterImage {
+    UIGraphicsBeginImageContextWithOptions(self.size, NO, UIScreen.mainScreen.scale);
+    [self drawInRect:CGRectMake(0, 0, self.size.width, self.size.height)];
+    
+    [waterImage drawInRect:CGRectMake((self.size.width - waterImage.size.width) / 2, (self.size.height - waterImage.size.height) / 2, waterImage.size.width, waterImage.size.height)];
+    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return newImage;
+}
+
+- (UIImage *)xm_scaleImageWithWidth:(CGFloat)width {
+    CGSize size = CGSizeMake(width, width / self.size.width * self.size.height);
+    UIGraphicsBeginImageContextWithOptions(size, NO, UIScreen.mainScreen.scale);
+    [self drawInRect:CGRectMake(0, 0, width, size.height)];
+    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return newImage;
+}
+
+- (UIImage *)xm_setColor:(UIColor *)color forBaseColor:(UIColor *)baseColor {
+    size_t width = CGImageGetWidth(self.CGImage);
+    size_t height = CGImageGetHeight(self.CGImage);
+    size_t bytesPerRow = width * 4;
+    uint32_t *rgbImageBuf = (uint32_t *)malloc(bytesPerRow * height);
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CGContextRef context = CGBitmapContextCreate(rgbImageBuf, width, height, 8, bytesPerRow, colorSpace, kCGBitmapByteOrder32Little | kCGImageAlphaNoneSkipLast);
+    CGContextDrawImage(context, CGRectMake(0, 0, width, height), self.CGImage);
+    size_t pixelNumber = width * height;
+    uint32_t *p32 = rgbImageBuf;
+    CGFloat r, g, b;
+    [color getRed:&r green:&g blue:&b alpha:NULL];
+    CGFloat br, bg, bb;
+    [baseColor getRed:&br green:&bg blue:&bb alpha:NULL];
+    uint32_t baseColorInt = (uint32_t)((((uint8_t)round(br * 255)) << 24) | (((uint8_t)round(bg * 255)) << 16) | (((uint8_t)round(bb * 255)) << 8));
+    for (int i=0; i < pixelNumber; i++, p32++) {
+        if ((*p32 & 0xffffff00) <= baseColorInt) {
+            uint8_t *p8 = (uint8_t *)p32;
+            p8[3] = r * 255;
+            p8[2] = g * 255;
+            p8[1] = b * 255;
+        } else {
+            uint8_t *p8 = (uint8_t *)p32;
+            p8[0] = 0;
+        }
+    }
+    CGDataProviderRef dataProvider = CGDataProviderCreateWithData(NULL, rgbImageBuf, bytesPerRow, dataProviderReleaseDataCallback);
+    CGImageRef cgImage = CGImageCreate(width, height, 8, 32, bytesPerRow, colorSpace, kCGImageAlphaLast | kCGBitmapByteOrder32Little, dataProvider, NULL, true, kCGRenderingIntentDefault);
+    UIImage *image = [UIImage imageWithCGImage:cgImage];
+    
+    CGColorSpaceRelease(colorSpace);
+    CGContextRelease(context);
+    CGImageRelease(cgImage);
+    return image;
+}
+
+void dataProviderReleaseDataCallback(void * __nullable info,
+                                     const void *  data, size_t size) {
+    if (data) {
+        free((void *)data);
+    }
+}
+
 @end
 
 
