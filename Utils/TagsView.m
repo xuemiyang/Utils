@@ -76,7 +76,7 @@
             CGFloat countViewW = width(18);
             RoundCountView *countView = [[RoundCountView alloc] initWithFrame:CGRectMake(w - countViewW, 0, countViewW, countViewW)];
             countView.hidden = YES;
-            [button addSubview:countView];
+            [button insertSubview:countView aboveSubview:button.titleLabel];
             NSValue *value = [NSValue valueWithNonretainedObject:button];
             [_buttons addObject:value];
             button.tag = i;
