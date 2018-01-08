@@ -21,6 +21,28 @@
         _height = 44;
         _identifier = NSStringFromClass(cellClass);
         _cellClass = cellClass;
+        _propertyNames = [NSMutableArray array];
+        Class cls = cellClass;
+        while (cls) {
+            unsigned int outCount = 0;
+            objc_property_t *propertys = class_copyPropertyList(cls, &outCount);
+            for (int i=0; i<outCount; i++) {
+                objc_property_t property = propertys[i];
+                const char *name = property_getName(property);
+                if (!name) {
+                    continue;
+                }
+                NSString *key = [NSString stringWithUTF8String:name];
+                if (!key) {
+                    continue;
+                }
+                if (![_propertyNames containsObject:key]) {
+                    [_propertyNames addObject:key];
+                }
+            }
+            free(propertys);
+            cls = class_getSuperclass(cls);
+        }
     }
     return self;
 }
@@ -68,28 +90,11 @@
     }
     cell.imageView.image = item.image;
     if (item.extendDic && item.cellClass) {
-        Class cls = item.cellClass;
-        while (cls) {
-            unsigned int outCount = 0;
-            objc_property_t *propertys = class_copyPropertyList(cls, &outCount);
-            for (int i=0; i<outCount; i++) {
-                objc_property_t property = propertys[i];
-                const char *name = property_getName(property);
-                if (!name) {
-                    continue;
-                }
-                NSString *key = [NSString stringWithUTF8String:name];
-                if (!key) {
-                    continue;
-                }
-                id value = item.extendDic[key];
-                if (value) {
-                    [cell setValue:value forKey:key];
-                }
+        [item.extendDic enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+            if ([item.propertyNames containsObject:key]) {
+                [cell setValue:obj forKey:key];
             }
-            free(propertys);
-            cls = class_getSuperclass(cls);
-        }
+        }];
     }
 }
 

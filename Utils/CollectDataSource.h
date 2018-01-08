@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) Class cellClass;
 @property (nonatomic, assign) CGSize size;
 @property (nonatomic, strong, nullable) NSDictionary<NSString *, id> *extendDic;
+@property (nonatomic, strong, readonly) NSMutableArray<NSString *> *propertyNames;
 - (instancetype)initWithCellClass:(Class)cellClass;
 @end
 

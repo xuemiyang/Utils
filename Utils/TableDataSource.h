@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// default value 44
 @property (nonatomic, assign) CGFloat height;
 @property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, id> *extendDic;
+@property (nonatomic, strong, readonly) NSMutableArray<NSString *> *propertyNames;
 - (instancetype)initWithCellClass:(Class)cellClass;
 @end
 
