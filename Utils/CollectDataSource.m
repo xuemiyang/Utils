@@ -99,14 +99,11 @@
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     CollectItem *item = [self itemAtIndexPath:indexPath];
-    UICollectionViewCell *cell;
-    if (item.identifier) {
-        [collectionView registerNib:[UINib nibWithNibName:item.identifier bundle:nil] forCellWithReuseIdentifier:item.identifier];
-        cell = [collectionView dequeueReusableCellWithReuseIdentifier:item.identifier forIndexPath:indexPath];
-        [self _setItem:item toCell:cell];
-        if (_delegate && [_delegate respondsToSelector:@selector(collectDataSource:withCell:cellForRowAtIndexPath:)]) {
-            [_delegate collectDataSource:self withCell:cell cellForRowAtIndexPath:indexPath];
-        }
+    [collectionView registerNib:[UINib nibWithNibName:item.identifier bundle:nil] forCellWithReuseIdentifier:item.identifier];
+    UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:item.identifier forIndexPath:indexPath];
+    [self _setItem:item toCell:cell];
+    if (_delegate && [_delegate respondsToSelector:@selector(collectDataSource:withCell:cellForRowAtIndexPath:)]) {
+        [_delegate collectDataSource:self withCell:cell cellForRowAtIndexPath:indexPath];
     }
     return cell;
 }

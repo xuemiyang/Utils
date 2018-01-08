@@ -269,15 +269,12 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     TableItem *item = [self itemAtIndexPath:indexPath];
-    UITableViewCell *cell;
-    if (item.identifier) {
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:item.identifier];
+    if (!cell) {
+        [tableView registerNib:[UINib nibWithNibName:item.identifier bundle:nil] forCellReuseIdentifier:item.identifier];
         cell = [tableView dequeueReusableCellWithIdentifier:item.identifier];
-        if (!cell) {
-            [tableView registerNib:[UINib nibWithNibName:item.identifier bundle:nil] forCellReuseIdentifier:item.identifier];
-            cell = [tableView dequeueReusableCellWithIdentifier:item.identifier];
-        }
-        [self _setItem:item toCell:cell];
     }
+    [self _setItem:item toCell:cell];
     if (_delegate && [_delegate respondsToSelector:@selector(tableDataSource:withCell:cellForRowAtIndexPath:)]) {
         [_delegate tableDataSource:self withCell:cell cellForRowAtIndexPath:indexPath];
     }

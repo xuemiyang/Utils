@@ -12,8 +12,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface TableItem: NSObject
-@property (nonatomic, copy) NSString *identifier;
-@property (nonatomic, assign) Class cellClass;
+@property (nonatomic, copy, readonly) NSString *identifier;
+@property (nonatomic, assign, readonly) Class cellClass;
 @property (nonatomic, strong, nullable) UIImage *image;
 @property (nonatomic, copy, nullable) NSString *title;
 @property (nonatomic, strong, nullable) UIColor *titleColor;
