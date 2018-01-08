@@ -11,15 +11,14 @@
 
 @implementation TableItem
 - (instancetype)init {
-    if (self = [super init]) {
-        _accessoryType = UITableViewCellAccessoryNone;
-        _height = 44;
-    }
-    return self;
+    @throw [NSException exceptionWithName:@"TableItem init error" reason:@"TableItem must be initialized with a cellClass. Use 'initWithCellClass:' instead." userInfo:nil];
+    return [self initWithCellClass:[UITableViewCell class]];
 }
 
 - (instancetype)initWithCellClass:(Class)cellClass {
-    if (self = [self init]) {
+    if (self = [super init]) {
+        _accessoryType = UITableViewCellAccessoryNone;
+        _height = 44;
         _identifier = NSStringFromClass(cellClass);
         _cellClass = cellClass;
     }
@@ -58,6 +57,9 @@
     }
     if (item.detailColor) {
         cell.detailTextLabel.textColor = item.detailColor;
+    }
+    if (item.detailAttributedString) {
+        cell.detailTextLabel.attributedText = item.detailAttributedString;
     }
     if (item.accessoryView) {
         cell.accessoryView = item.accessoryView();

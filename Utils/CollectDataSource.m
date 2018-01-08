@@ -10,6 +10,11 @@
 #import <objc/runtime.h>
 
 @implementation CollectItem
+- (instancetype)init {
+    @throw [NSException exceptionWithName:@"CollectItem init error" reason:@"CollectItem must be initialized with a cellClass. Use 'initWithCellClass:' instead." userInfo:nil];
+    return [self initWithCellClass:[UICollectionViewCell class]];
+}
+
 - (instancetype)initWithCellClass:(Class)cellClass {
     if (self = [super init]) {
         _identifier = NSStringFromClass(cellClass);

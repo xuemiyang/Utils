@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) UIColor *titleColor;
 @property (nonatomic, copy, nullable) NSString *detail;
 @property (nonatomic, strong, nullable) UIColor *detailColor;
+@property (nonatomic, strong, nullable) NSAttributedString *detailAttributedString;
 @property (nonatomic, assign) UITableViewCellAccessoryType accessoryType;
 @property (nonatomic, copy, nullable) UIView *(^accessoryView)(void);
 /// default value 44
