@@ -96,6 +96,10 @@
             }
         }];
     }
+    cell.layer.drawsAsynchronously = YES;
+    cell.layer.shouldRasterize = YES;
+    cell.layer.rasterizationScale = [UIScreen mainScreen].scale;
+    cell.layer.opaque = YES;
 }
 
 #pragma mark - public

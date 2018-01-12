@@ -261,7 +261,7 @@
     size_t bytesPerRow = width * 4;
     uint32_t *rgbImageBuf = (uint32_t *)malloc(bytesPerRow * height);
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    CGContextRef context = CGBitmapContextCreate(rgbImageBuf, width, height, 8, bytesPerRow, colorSpace, kCGBitmapByteOrder32Little | kCGImageAlphaNoneSkipLast);
+    CGContextRef context = CGBitmapContextCreate(rgbImageBuf, width, height, 8, bytesPerRow, colorSpace, kCGBitmapByteOrderDefault | kCGImageAlphaNoneSkipFirst);
     CGContextDrawImage(context, CGRectMake(0, 0, width, height), self.CGImage);
     size_t pixelNumber = width * height;
     uint32_t *p32 = rgbImageBuf;
@@ -273,16 +273,16 @@
     for (int i=0; i < pixelNumber; i++, p32++) {
         if ((*p32 & 0xffffff00) <= baseColorInt) {
             uint8_t *p8 = (uint8_t *)p32;
-            p8[3] = r * 255;
+            p8[3] = b * 255;
             p8[2] = g * 255;
-            p8[1] = b * 255;
+            p8[1] = r * 255;
         } else {
             uint8_t *p8 = (uint8_t *)p32;
             p8[0] = 0;
         }
     }
     CGDataProviderRef dataProvider = CGDataProviderCreateWithData(NULL, rgbImageBuf, bytesPerRow, dataProviderReleaseDataCallback);
-    CGImageRef cgImage = CGImageCreate(width, height, 8, 32, bytesPerRow, colorSpace, kCGImageAlphaLast | kCGBitmapByteOrder32Little, dataProvider, NULL, true, kCGRenderingIntentDefault);
+    CGImageRef cgImage = CGImageCreate(width, height, 8, 32, bytesPerRow, colorSpace, kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrderDefault, dataProvider, NULL, true, kCGRenderingIntentDefault);
     UIImage *image = [UIImage imageWithCGImage:cgImage];
     
     CGColorSpaceRelease(colorSpace);
