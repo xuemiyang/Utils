@@ -21,6 +21,9 @@
 }
 
 - (void)setupView {
+    if (_tableView.delegate == self) {
+        return;
+    }
     _tableView.dataSource = _dataSource;
     _tableView.delegate = self;
     _dataSource.rows = _itemsFactory.rows;
@@ -127,6 +130,9 @@
 }
 
 - (void)setupView {
+    if (_collectionView.delegate == self) {
+        return;
+    }
     _collectionView.delegate = self;
     _collectionView.dataSource = _dataSource;
     _dataSource.rows = _itemsFactory.rows;
