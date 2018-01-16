@@ -31,11 +31,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface UIImage (XM)
 + (instancetype)xm_colorImage:(UIColor *)color size:(CGSize)size scale:(CGFloat)scale;
-+ (UIImage *)xm_QRImageWithString:(NSString *)string size:(CGSize)size;
-+ (UIImage *)xm_QRImageWithString:(NSString *)string size:(CGSize)size QRColor:(UIColor *)QRColor backgroundColor:(UIColor *)backgroundColor;
-- (UIImage *)xm_setColor:(UIColor *)color forBaseColor:(UIColor *)baseColor;
-- (UIImage *)xm_addWaterImage:(UIImage *)waterImage;
-- (UIImage *)xm_scaleImageWithWidth:(CGFloat)width;
++ (instancetype)xm_QRImageWithString:(NSString *)string size:(CGSize)size;
++ (instancetype)xm_QRImageWithString:(NSString *)string size:(CGSize)size QRColor:(UIColor *)QRColor backgroundColor:(UIColor *)backgroundColor;
+- (instancetype)xm_setColor:(UIColor *)color forBaseColor:(UIColor *)baseColor;
+- (instancetype)xm_addWaterImage:(UIImage *)waterImage;
+- (instancetype)xm_imageScaleMinBorderLength:(CGFloat)minBorderLength;
+- (instancetype)xm_imageFixOrientation;
 @end
 
 @interface UIScreen (XM)
