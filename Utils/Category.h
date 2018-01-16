@@ -51,40 +51,40 @@ NS_ASSUME_NONNULL_BEGIN
 
 CG_INLINE CGFloat width(CGFloat w) {
     if ([UIScreen xm_isIPhone320_480]) {
-        return w;
+        return floor(w);
     }
     if ([UIScreen xm_isIPhone320_568]) {
-        return w;
+        return floor(w);
     }
     if ([UIScreen xm_isIPhone375_667]) {
-        return w / 320.0 * 375.0;
+        return floor(w / 320.0 * 375.0);
     }
     if ([UIScreen xm_isIPhone414_736]) {
-        return w / 320.0 * 414.0;
+        return floor(w / 320.0 * 414.0);
     }
     if ([UIScreen xm_isIPhone375_812]) {
-        return w / 320.0 * 375.0;
+        return floor(w / 320.0 * 375.0);
     }
-    return w;
+    return floor(w);
 }
 
 CG_INLINE CGFloat height(CGFloat h) {
     if ([UIScreen xm_isIPhone320_480]) {
-        return h / 568.0 * 480.0;
+        return floor(h / 568.0 * 480.0);
     }
     if ([UIScreen xm_isIPhone320_568]) {
-        return h;
+        return floor(h);
     }
     if ([UIScreen xm_isIPhone375_667]) {
-        return h / 568.0 * 667.0;
+        return floor(h / 568.0 * 667.0);
     }
     if ([UIScreen xm_isIPhone414_736]) {
-        return h / 568.0 * 736.0;
+        return floor(h / 568.0 * 736.0);
     }
     if ([UIScreen xm_isIPhone375_812]) {
-        return h / 568.0 * 734.0;
+        return floor(h / 568.0 * 734.0);
     }
-    return h;
+    return floor(h);
 }
 
 @interface UIFont (XM)
