@@ -22,9 +22,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) UIButton *button;
 @end
 
+@class TableViewHelper;
 @protocol TableUIHelper <NSObject>
-@property (nonatomic, weak) UITableView *tableView;
-@property (nonatomic, weak) TableDataSource *dataSource;
+@property (nonatomic, weak) TableViewHelper *tableViewHelper;
 @end
 
 @protocol TextFieldHelper <ViewHelper>

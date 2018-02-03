@@ -43,8 +43,7 @@
 
 - (void)setupTableUIHelper:(id<ViewHelper,TableUIHelper>)helper {
     helper.context = _context;
-    helper.dataSource = _dataSource;
-    helper.tableView = _tableView;
+    helper.tableViewHelper = self;
 }
 
 #pragma mark - UITableViewDelegate

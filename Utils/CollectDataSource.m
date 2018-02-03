@@ -48,7 +48,9 @@
 
 - (void)_setItem:(CollectItem *)item toCell:(UICollectionViewCell *)cell {
     if (item.extendDic && item.cellClass) {
-        [cell setValuesForKeysWithDictionary:item.extendDic];
+        [item.extendDic enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+            [cell setValue:obj forKeyPath:key];
+        }];
     }
     cell.layer.drawsAsynchronously = YES;
     cell.layer.shouldRasterize = YES;
