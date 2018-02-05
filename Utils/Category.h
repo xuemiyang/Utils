@@ -37,6 +37,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)xm_addWaterImage:(UIImage *)waterImage;
 - (instancetype)xm_imageScaleMinBorderLength:(CGFloat)minBorderLength;
 - (instancetype)xm_imageFixOrientation;
+- (instancetype)xm_decodeImage;
+@end
+
+@interface NSData (XM)
+- (UIImage *)xm_decodeImage;
 @end
 
 @interface UIScreen (XM)

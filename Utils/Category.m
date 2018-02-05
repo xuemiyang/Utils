@@ -381,7 +381,57 @@ void dataProviderReleaseDataCallback(void * __nullable info,
     return img;
 }
 
+- (instancetype)xm_decodeImage {
+    CGImageRef imageRef = self.CGImage;
+    if (imageRef == NULL) {
+        return nil;
+    }
+    size_t width = CGImageGetWidth(imageRef);
+    size_t height = CGImageGetHeight(imageRef);
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CGContextRef context = CGBitmapContextCreate(NULL, width, height, 8, 0, colorSpace, kCGBitmapByteOrder32Host | kCGImageAlphaPremultipliedFirst);
+    CFRelease(colorSpace);
+    if (context) {
+        CGContextDrawImage(context, CGRectMake(0, 0, width, height), imageRef);
+        CGImageRef imageRefExtended = CGBitmapContextCreateImage(context);
+        CFRelease(context);
+        if (imageRefExtended) {
+            UIImage *image = [UIImage imageWithCGImage:imageRefExtended];
+            CFRelease(imageRefExtended);
+            return image;
+        }
+    }
+    return nil;
+}
 
+@end
+
+@implementation NSData (XM)
+- (UIImage *)xm_decodeImage {
+    CGImageSourceRef source = CGImageSourceCreateWithData((__bridge CFDataRef)self, NULL);
+    CGImageRef imageRef = CGImageSourceCreateImageAtIndex(source, 0, nil);
+    CFRelease(source);
+    if (imageRef == NULL) {
+        return nil;
+    }
+    size_t width = CGImageGetWidth(imageRef);
+    size_t height = CGImageGetHeight(imageRef);
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CGContextRef context = CGBitmapContextCreate(NULL, width, height, 8, 0, colorSpace, kCGBitmapByteOrder32Host | kCGImageAlphaPremultipliedFirst);
+    CFRelease(colorSpace);
+    if (context) {
+        CGContextDrawImage(context, CGRectMake(0, 0, width, height), imageRef);
+        CFRelease(imageRef);
+        CGImageRef imageRefExtended = CGBitmapContextCreateImage(context);
+        CFRelease(context);
+        if (imageRefExtended) {
+            UIImage *image = [UIImage imageWithCGImage:imageRefExtended];
+            CFRelease(imageRefExtended);
+            return image;
+        }
+    }
+    return nil;
+}
 @end
 
 
