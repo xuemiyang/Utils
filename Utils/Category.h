@@ -15,11 +15,22 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readonly) BOOL xm_isNull;
 @property (nonatomic, assign, readonly) BOOL xm_isPhone;
 @property (nonatomic, assign, readonly) BOOL xm_isNumberAndChar;
+@property (nonatomic, assign, readonly) BOOL xm_isEmail;
 @property (nonatomic, copy, readonly) NSString *xm_urlEncodeString;
+- (instancetype)xm_md5;
+- (instancetype)xm_sha1;
+- (instancetype)xm_sha256;
+- (instancetype)xm_hmacWithKey:(NSString *)key;
++ (instancetype)xm_encryptedKeyUsingAES;
++ (instancetype)xm_encryptedKeyUsing3DES;/// 3DES
++ (instancetype)xm_encryptedKeyUsingMAC;
++ (instancetype)xm_encryptedKeyWithLength:(size_t)length;
+
 - (CGSize)xm_size:(UIFont *)font;
 - (CGSize)xm_size:(UIFont *)font size:(CGSize)size mode:(NSLineBreakMode)mode;
 - (CGFloat)xm_height:(UIFont *)font width:(CGFloat)width;
 - (instancetype)xm_makeDotAppearOnce;
+- (instancetype)xm_trim;
 + (instancetype)xm_nullString:(UIFont *)font width:(CGFloat)width;
 @end
 
@@ -33,11 +44,15 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)xm_colorImage:(UIColor *)color size:(CGSize)size scale:(CGFloat)scale;
 + (instancetype)xm_QRImageWithString:(NSString *)string size:(CGSize)size;
 + (instancetype)xm_QRImageWithString:(NSString *)string size:(CGSize)size QRColor:(UIColor *)QRColor backgroundColor:(UIColor *)backgroundColor;
++ (instancetype)xm_gradientImageWithSize:(CGSize)size colors:(NSArray<UIColor *> *)colors locations:(NSArray<NSNumber *> *)locations startPoint:(CGPoint)startPoint endPoint:(CGPoint)endPoint;
++ (instancetype)xm_stretchedWithImageName:(NSString *)name;
+- (instancetype)xm_stretched;
 - (instancetype)xm_setColor:(UIColor *)color forBaseColor:(UIColor *)baseColor;
 - (instancetype)xm_addWaterImage:(UIImage *)waterImage;
 - (instancetype)xm_imageScaleMinBorderLength:(CGFloat)minBorderLength;
 - (instancetype)xm_imageFixOrientation;
 - (instancetype)xm_decodeImage;
+- (instancetype)xm_imageRotatedByDegrees:(CGFloat)degrees;
 @end
 
 @interface NSData (XM)

@@ -7,6 +7,7 @@
 //
 
 #import "Category.h"
+#import <CommonCrypto/CommonCrypto.h>
 
 @implementation NSString (XM)
 - (BOOL)xm_isNull {
@@ -31,9 +32,120 @@
     return [predicate evaluateWithObject:self];
 }
 
+- (BOOL)xm_isEmail {
+    if (self.length == 0) {
+        return NO;
+    }
+    NSString *regex = @"[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}";
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regex];
+    return [predicate evaluateWithObject:self];
+}
+
 - (NSString *)xm_urlEncodeString {
     NSCharacterSet *characterSet = [NSCharacterSet characterSetWithCharactersInString:@"!*'\"();:@&=+$,/?%#[]% "];
     return [self stringByAddingPercentEncodingWithAllowedCharacters:characterSet] ?: self;
+}
+
+- (instancetype)xm_trim {
+    return [self stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+}
+
+- (instancetype)_hashWithType:(NSInteger)type {
+    const char *ptr = self.UTF8String;
+    NSInteger bufferSize;
+    switch (type) {
+        case 0:
+            // 16bytes
+            bufferSize = CC_MD5_DIGEST_LENGTH;
+            break;
+        case 1:
+            // 20bytes
+            bufferSize = CC_SHA1_DIGEST_LENGTH;
+            break;
+        case 2:
+            // 32bytes
+            bufferSize = CC_SHA256_DIGEST_LENGTH;
+            break;
+        default:
+            return nil;
+            break;
+    }
+    
+    Byte buffer[bufferSize];
+    
+    switch (type) {
+        case 0:
+            CC_MD5(ptr, (CC_LONG)strlen(ptr), buffer);
+            break;
+        case 1:
+            CC_SHA1(ptr, (CC_LONG)strlen(ptr), buffer);
+            break;
+        case 2:
+            CC_SHA256(ptr, (CC_LONG)strlen(ptr), buffer);
+            break;
+        default:
+            return nil;
+            break;
+    }
+    
+    NSMutableString *hashString = [[NSMutableString alloc] initWithCapacity:2*bufferSize];
+    for (int i=0; i<bufferSize; i++) {
+        [hashString appendFormat:@"%02x", buffer[i]];
+    }
+    return hashString;
+}
+
+- (instancetype)xm_md5 {
+    return [self _hashWithType:0];
+}
+
+- (instancetype)xm_sha1 {
+    return [self _hashWithType:1];
+}
+
+- (instancetype)xm_sha256 {
+    return [self _hashWithType:2];
+}
+
+- (instancetype)xm_hmacWithKey:(NSString *)key {
+    const char *ptr = self.UTF8String;
+    const char *keyPtr = key.UTF8String;
+    
+    Byte buffer[CC_SHA256_DIGEST_LENGTH];
+    CCHmac(kCCHmacAlgSHA256, keyPtr, strlen(keyPtr), ptr, strlen(ptr), buffer);
+    NSMutableString *hashString = [[NSMutableString alloc] initWithCapacity:2*CC_SHA256_DIGEST_LENGTH];
+    for (int i=0; i<CC_SHA256_DIGEST_LENGTH; i++) {
+        [hashString appendFormat:@"%02x", buffer[i]];
+    }
+    return hashString;
+}
+
++ (instancetype)xm_encryptedKeyUsingMAC {
+    return [self xm_encryptedKeyWithLength:kCCKeySizeAES128];
+}
+
++ (instancetype)xm_encryptedKeyUsingAES {
+    return [self xm_encryptedKeyWithLength:kCCKeySizeAES128];
+}
+
++ (instancetype)xm_encryptedKeyUsing3DES {
+    return [self xm_encryptedKeyWithLength:kCCKeySize3DES];
+}
+
++ (instancetype)xm_encryptedKeyWithLength:(size_t)length {
+    if (length == 0) {
+        length = kCCKeySizeAES128;
+    }
+    Byte buffer[length];
+    int result = SecRandomCopyBytes(kSecRandomDefault, length, buffer);
+    if (result == noErr) {
+        NSMutableString *key = [[NSMutableString alloc] initWithCapacity:2*length];
+        for (int i=0; i<length; i++) {
+            [key appendFormat:@"%02x", buffer[i]];
+        }
+        return key;
+    }
+    return nil;
 }
 
 - (CGSize)xm_size:(UIFont *)font {
@@ -402,6 +514,69 @@ void dataProviderReleaseDataCallback(void * __nullable info,
         }
     }
     return nil;
+}
+
+- (instancetype)xm_imageRotatedByDegrees:(CGFloat)degrees {
+    
+    CGFloat width = CGImageGetWidth(self.CGImage);
+    CGFloat height = CGImageGetHeight(self.CGImage);
+    
+    CGSize rotatedSize;
+    
+    rotatedSize.width = width;
+    rotatedSize.height = height;
+    
+    UIGraphicsBeginImageContext(rotatedSize);
+    CGContextRef bitmap = UIGraphicsGetCurrentContext();
+    CGContextTranslateCTM(bitmap, rotatedSize.width/2, rotatedSize.height/2);
+    CGContextRotateCTM(bitmap, degrees * M_PI / 180);
+    CGContextRotateCTM(bitmap, M_PI);
+    CGContextScaleCTM(bitmap, -1.0, 1.0);
+    CGContextDrawImage(bitmap, CGRectMake(-rotatedSize.width/2, -rotatedSize.height/2, rotatedSize.width, rotatedSize.height), self.CGImage);
+    UIImage* newImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return newImage;
+}
+
++ (instancetype)xm_gradientImageWithSize:(CGSize)size colors:(NSArray<UIColor *> *)colors locations:(NSArray<NSNumber *> *)locations startPoint:(CGPoint)startPoint endPoint:(CGPoint)endPoint {
+    if (colors.count > 0 && locations.count > 0) {
+        UIGraphicsBeginImageContext(size);
+        CGContextRef context = UIGraphicsGetCurrentContext();
+        CGColorRef CGColors[colors.count];
+        for (int i=0; i<colors.count; i++) {
+            CGColors[i] = colors[i].CGColor;
+        }
+        CFArrayRef colorsRef = CFArrayCreate(CFAllocatorGetDefault(), (const void **)CGColors, colors.count, NULL);
+        CGFloat locationsRef[locations.count];
+        for (int i=0; i<locations.count; i++) {
+            locationsRef[i] = locations[i].doubleValue;
+        }
+        CGColorSpaceRef colorSpaceRef = CGColorSpaceCreateDeviceRGB();
+        CGGradientRef gradient = CGGradientCreateWithColors(colorSpaceRef, colorsRef, locationsRef);
+        CGPoint _startPoint_ = CGPointMake(startPoint.x * size.width, startPoint.y * size.height);
+        CGPoint _endPoint_ = CGPointMake(endPoint.x * size.width, endPoint.y * size.height);
+        CGContextDrawLinearGradient(context, gradient, _startPoint_, _endPoint_, kCGGradientDrawsBeforeStartLocation);
+        UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+        CGGradientRelease(gradient);
+        CFRelease(colorsRef);
+        CGColorSpaceRelease(colorSpaceRef);
+        UIGraphicsEndImageContext();
+        return image;
+    }
+    return nil;
+}
+
++ (instancetype)xm_stretchedWithImageName:(NSString *)name {
+    UIImage *image = [UIImage imageNamed:name];
+    NSInteger leftCap = image.size.width * 0.5;
+    NSInteger topCap = image.size.height * 0.5;
+    return [image stretchableImageWithLeftCapWidth:leftCap topCapHeight:topCap];
+}
+
+- (instancetype)xm_stretched {
+    NSInteger leftCap = self.size.width * 0.5;
+    NSInteger topCap = self.size.height * 0.5;
+    return [self stretchableImageWithLeftCapWidth:leftCap topCapHeight:topCap];
 }
 
 @end
