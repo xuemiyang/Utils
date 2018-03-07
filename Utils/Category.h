@@ -53,6 +53,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)xm_imageFixOrientation;
 - (instancetype)xm_decodeImage;
 - (instancetype)xm_imageRotatedByDegrees:(CGFloat)degrees;
+- (instancetype)xm_imageByRoundCornerRadius:(CGFloat)radius;
+- (instancetype)xm_imageByRoundCornerRadius:(CGFloat)radius
+                                borderWidth:(CGFloat)borderWidth
+                                borderColor:(UIColor * _Nullable)borderColor;
+- (instancetype)xm_imageByRoundCornerRadius:(CGFloat)radius
+                                    corners:(UIRectCorner)corners
+                                borderWidth:(CGFloat)borderWidth
+                                borderColor:(UIColor * _Nullable)borderColor
+                             borderLineJoin:(CGLineJoin)borderLineJoin;
 @end
 
 @interface NSData (XM)
