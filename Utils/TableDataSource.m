@@ -251,7 +251,7 @@
     TableItem *item = [self itemAtIndexPath:indexPath];
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:item.identifier];
     if (!cell) {
-        [tableView registerNib:[UINib nibWithNibName:item.identifier bundle:nil] forCellReuseIdentifier:item.identifier];
+        [tableView registerNib:[UINib nibWithNibName:NSStringFromClass(item.cellClass) bundle:nil] forCellReuseIdentifier:item.identifier];
         cell = [tableView dequeueReusableCellWithIdentifier:item.identifier];
     }
     [self _setItem:item toCell:cell];

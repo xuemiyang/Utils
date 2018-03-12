@@ -79,7 +79,7 @@
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     CollectItem *item = [self itemAtIndexPath:indexPath];
-    [collectionView registerNib:[UINib nibWithNibName:item.identifier bundle:nil] forCellWithReuseIdentifier:item.identifier];
+    [collectionView registerNib:[UINib nibWithNibName:NSStringFromClass(item.cellClass) bundle:nil] forCellWithReuseIdentifier:item.identifier];
     UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:item.identifier forIndexPath:indexPath];
     [self _setItem:item toCell:cell];
     if (_delegate && [_delegate respondsToSelector:@selector(collectDataSource:withCell:cellForRowAtIndexPath:)]) {
