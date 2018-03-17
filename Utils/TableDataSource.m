@@ -26,17 +26,67 @@
 }
 @end
 
+@interface TableDataSource ()
+@property (nonatomic, assign) CFRunLoopRef runloop;
+@property (nonatomic, assign) CFRunLoopObserverRef observer;
+@property (nonatomic, strong) NSMutableDictionary<NSIndexPath *, void (^)(void)> *setupCellHandlers;
+@end
+
 @implementation TableDataSource
 - (instancetype)init {
     if (self = [super init]) {
         _rows = @[@0];
         _headTitles = @[];
         _items = @[];
+        _setupCellHandlers = [NSMutableDictionary dictionary];
+        if ([NSThread isMainThread]) {
+            [self _addRunLoopObserver];
+        } else {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self _addRunLoopObserver];
+            });
+        }
     }
     return self;
 }
 
+- (void)dealloc {
+    CFRunLoopRemoveObserver(_runloop, _observer, kCFRunLoopCommonModes);
+    CFRelease(_observer);
+    _runloop = NULL;
+}
+
 #pragma mark - private
+- (void)_addRunLoopObserver {
+    CFRunLoopRef runloop = CFRunLoopGetCurrent();
+    _runloop = runloop;
+    CFRunLoopObserverContext context = {0, (__bridge void *)(self), NULL, NULL, NULL};
+    CFRunLoopObserverRef observer = CFRunLoopObserverCreate(NULL, kCFRunLoopBeforeWaiting, true, 0, observeCallback, &context);
+    _observer = observer;
+    CFRunLoopAddObserver(runloop, observer, kCFRunLoopCommonModes);
+}
+
+static void observeCallback(CFRunLoopObserverRef observer, CFRunLoopActivity activity, void *info) {
+    switch (activity) {
+        case kCFRunLoopBeforeWaiting: {
+            if (info == NULL) {
+                return;
+            }
+            TableDataSource *dataSource = (__bridge TableDataSource *)(info);
+            if (dataSource.setupCellHandlers.count == 0) {
+                return;
+            }
+            [dataSource.setupCellHandlers enumerateKeysAndObjectsUsingBlock:^(NSIndexPath * _Nonnull key, void (^ _Nonnull obj)(void), BOOL * _Nonnull stop) {
+                obj();
+            }];
+            [dataSource.setupCellHandlers removeAllObjects];
+        }
+            break;
+        default:
+            break;
+    }
+}
+
 - (NSUInteger)_indexAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section >= _rows.count) {
         return NSNotFound;
@@ -254,10 +304,13 @@
         [tableView registerNib:[UINib nibWithNibName:NSStringFromClass(item.cellClass) bundle:nil] forCellReuseIdentifier:item.identifier];
         cell = [tableView dequeueReusableCellWithIdentifier:item.identifier];
     }
-    [self _setItem:item toCell:cell];
-    if (_delegate && [_delegate respondsToSelector:@selector(tableDataSource:withCell:cellForRowAtIndexPath:)]) {
-        [_delegate tableDataSource:self withCell:cell cellForRowAtIndexPath:indexPath];
-    }
+    __weak typeof(self) weakSelf = self;
+    _setupCellHandlers[indexPath] = ^{
+        [weakSelf _setItem:item toCell:cell];
+        if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(tableDataSource:withCell:cellForRowAtIndexPath:)]) {
+            [weakSelf.delegate tableDataSource:weakSelf withCell:cell cellForRowAtIndexPath:indexPath];
+        }
+    };
     return cell;
 }
 

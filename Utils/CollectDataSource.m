@@ -24,16 +24,66 @@
 }
 @end
 
+@interface CollectDataSource ()
+@property (nonatomic, assign) CFRunLoopRef runloop;
+@property (nonatomic, assign) CFRunLoopObserverRef observer;
+@property (nonatomic, strong) NSMutableDictionary<NSIndexPath *, void (^)(void)> *setupCellHandlers;
+@end
+
 @implementation CollectDataSource
 - (instancetype)init {
     if (self = [super init]) {
         _rows = @[];
         _items = @[];
+        _setupCellHandlers = [NSMutableDictionary dictionary];
+        if ([NSThread isMainThread]) {
+            [self _addRunLoopObserver];
+        } else {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self _addRunLoopObserver];
+            });
+        }
     }
     return self;
 }
 
+- (void)dealloc {
+    CFRunLoopRemoveObserver(_runloop, _observer, kCFRunLoopCommonModes);
+    CFRelease(_observer);
+    _runloop = NULL;
+}
+
 #pragma mark - private
+- (void)_addRunLoopObserver {
+    CFRunLoopRef runloop = CFRunLoopGetCurrent();
+    _runloop = runloop;
+    CFRunLoopObserverContext context = {0, (__bridge void *)(self), NULL, NULL, NULL};
+    CFRunLoopObserverRef observer = CFRunLoopObserverCreate(NULL, kCFRunLoopBeforeWaiting, true, 0, observeCallback, &context);
+    _observer = observer;
+    CFRunLoopAddObserver(runloop, observer, kCFRunLoopCommonModes);
+}
+
+static void observeCallback(CFRunLoopObserverRef observer, CFRunLoopActivity activity, void *info) {
+    switch (activity) {
+        case kCFRunLoopBeforeWaiting: {
+            if (info == NULL) {
+                return;
+            }
+            CollectDataSource *dataSource = (__bridge CollectDataSource *)(info);
+            if (dataSource.setupCellHandlers.count == 0) {
+                return;
+            }
+            [dataSource.setupCellHandlers enumerateKeysAndObjectsUsingBlock:^(NSIndexPath * _Nonnull key, void (^ _Nonnull obj)(void), BOOL * _Nonnull stop) {
+                obj();
+            }];
+            [dataSource.setupCellHandlers removeAllObjects];
+        }
+            break;
+        default:
+            break;
+    }
+}
+
 - (NSUInteger)_indexAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section >= _rows.count) {
         return NSNotFound;
@@ -81,10 +131,13 @@
     CollectItem *item = [self itemAtIndexPath:indexPath];
     [collectionView registerNib:[UINib nibWithNibName:NSStringFromClass(item.cellClass) bundle:nil] forCellWithReuseIdentifier:item.identifier];
     UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:item.identifier forIndexPath:indexPath];
-    [self _setItem:item toCell:cell];
-    if (_delegate && [_delegate respondsToSelector:@selector(collectDataSource:withCell:cellForRowAtIndexPath:)]) {
-        [_delegate collectDataSource:self withCell:cell cellForRowAtIndexPath:indexPath];
-    }
+    __weak typeof(self) weakSelf = self;
+    _setupCellHandlers[indexPath] = ^{
+        [weakSelf _setItem:item toCell:cell];
+        if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(collectDataSource:withCell:cellForRowAtIndexPath:)]) {
+            [weakSelf.delegate collectDataSource:weakSelf withCell:cell cellForRowAtIndexPath:indexPath];
+        }
+    };
     return cell;
 }
 
