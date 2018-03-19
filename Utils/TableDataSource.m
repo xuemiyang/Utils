@@ -311,6 +311,9 @@ static void observeCallback(CFRunLoopObserverRef observer, CFRunLoopActivity act
             [weakSelf.delegate tableDataSource:weakSelf withCell:cell cellForRowAtIndexPath:indexPath];
         }
     };
+    if (_delegate && [_delegate respondsToSelector:@selector(tableDataSource:withCell:cellForRowAtIndexPath:)]) {
+        [_delegate tableDataSource:self withCell:cell cellForRowAtIndexPath:indexPath];
+    }
     return cell;
 }
 
