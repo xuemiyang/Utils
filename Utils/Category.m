@@ -46,11 +46,11 @@
     return [self stringByAddingPercentEncodingWithAllowedCharacters:characterSet] ?: self;
 }
 
-- (instancetype)xm_trim {
+- (NSString *)xm_trim {
     return [self stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
 }
 
-- (instancetype)_hashWithType:(NSInteger)type {
+- (NSString *)_hashWithType:(NSInteger)type {
     const char *ptr = self.UTF8String;
     NSInteger bufferSize;
     switch (type) {
@@ -95,19 +95,19 @@
     return hashString;
 }
 
-- (instancetype)xm_md5 {
+- (NSString *)xm_md5 {
     return [self _hashWithType:0];
 }
 
-- (instancetype)xm_sha1 {
+- (NSString *)xm_sha1 {
     return [self _hashWithType:1];
 }
 
-- (instancetype)xm_sha256 {
+- (NSString *)xm_sha256 {
     return [self _hashWithType:2];
 }
 
-- (instancetype)xm_hmacWithKey:(NSString *)key {
+- (NSString *)xm_hmacWithKey:(NSString *)key {
     const char *ptr = self.UTF8String;
     const char *keyPtr = key.UTF8String;
     
@@ -120,19 +120,19 @@
     return hashString;
 }
 
-+ (instancetype)xm_encryptedKeyUsingMAC {
++ (NSString *)xm_encryptedKeyUsingMAC {
     return [self xm_encryptedKeyWithLength:kCCKeySizeAES128];
 }
 
-+ (instancetype)xm_encryptedKeyUsingAES {
++ (NSString *)xm_encryptedKeyUsingAES {
     return [self xm_encryptedKeyWithLength:kCCKeySizeAES128];
 }
 
-+ (instancetype)xm_encryptedKeyUsing3DES {
++ (NSString *)xm_encryptedKeyUsing3DES {
     return [self xm_encryptedKeyWithLength:kCCKeySize3DES];
 }
 
-+ (instancetype)xm_encryptedKeyWithLength:(size_t)length {
++ (NSString *)xm_encryptedKeyWithLength:(size_t)length {
     if (length == 0) {
         length = kCCKeySizeAES128;
     }
@@ -160,7 +160,7 @@
     return [self xm_size:font size:CGSizeMake(width, HUGE) mode:NSLineBreakByWordWrapping].height;
 }
 
-- (instancetype)xm_makeDotAppearOnce {
+- (NSString *)xm_makeDotAppearOnce {
     NSRange range = [self rangeOfString:@"."];
     if (range.location != NSNotFound) {
         NSInteger startIndex = range.location + 1;
@@ -172,7 +172,7 @@
     return self;
 }
 
-+ (instancetype)xm_nullString:(UIFont *)font width:(CGFloat)width {
++ (NSString *)xm_nullString:(UIFont *)font width:(CGFloat)width {
     CGFloat w = [@" " sizeWithAttributes:@{NSFontAttributeName:font}].width;
     NSInteger count = width / w + 1;
     NSString *str = @"";
@@ -182,18 +182,80 @@
     return str;
 }
 
+size_t const kKeySize = kCCKeySizeAES128;
+
+- (NSString * _Nullable)xm_decryptAESWithKey:(NSString *)key initVector:(NSString *)initVector {
+    // 把 base64 String 转换成 Data
+    NSData *contentData = [[NSData alloc] initWithBase64EncodedString:self options:NSDataBase64DecodingIgnoreUnknownCharacters];
+    NSUInteger dataLength = contentData.length;
+    char keyPtr[kKeySize + 1];
+    memset(keyPtr, 0, sizeof(keyPtr));
+    [key getCString:keyPtr maxLength:sizeof(keyPtr) encoding:NSUTF8StringEncoding];
+    size_t decryptSize = dataLength + kCCBlockSizeAES128;
+    void *decryptedBytes = malloc(decryptSize);
+    size_t actualOutSize = 0;
+    NSData *initVectorData = [initVector dataUsingEncoding:NSUTF8StringEncoding];
+    CCCryptorStatus cryptStatus = CCCrypt(kCCDecrypt,
+                                          kCCAlgorithmAES,
+                                          kCCOptionPKCS7Padding,
+                                          keyPtr,
+                                          kKeySize,
+                                          initVectorData.bytes,
+                                          contentData.bytes,
+                                          dataLength,
+                                          decryptedBytes,
+                                          decryptSize,
+                                          &actualOutSize);
+    if (cryptStatus == kCCSuccess) {
+        return [[NSString alloc] initWithData:[NSData dataWithBytesNoCopy:decryptedBytes length:actualOutSize] encoding:NSUTF8StringEncoding];
+    }
+    free(decryptedBytes);
+    return nil;
+}
+
+- (NSString * _Nullable)xm_encryptAESWithKey:(NSString *)key initVector:(NSString *)initVector {
+    NSData *contentData = [self dataUsingEncoding:NSUTF8StringEncoding];
+    NSUInteger dataLength = contentData.length;
+    // 为结束符'\\0' +1
+    char keyPtr[kKeySize + 1];
+    memset(keyPtr, 0, sizeof(keyPtr));
+    [key getCString:keyPtr maxLength:sizeof(keyPtr) encoding:NSUTF8StringEncoding];
+    // 密文长度 <= 明文长度 + BlockSize
+    size_t encryptSize = dataLength + kCCBlockSizeAES128;
+    void *encryptedBytes = malloc(encryptSize);
+    size_t actualOutSize = 0;
+    NSData *initVectorData = [initVector dataUsingEncoding:NSUTF8StringEncoding];
+    CCCryptorStatus cryptStatus = CCCrypt(kCCEncrypt,
+                                          kCCAlgorithmAES,
+                                          kCCOptionPKCS7Padding,  // 系统默认使用 CBC，然后指明使用 PKCS7Padding
+                                          keyPtr,
+                                          kKeySize,
+                                          initVectorData.bytes,
+                                          contentData.bytes,
+                                          dataLength,
+                                          encryptedBytes,
+                                          encryptSize,
+                                          &actualOutSize);
+    if (cryptStatus == kCCSuccess) {
+        // 对加密后的数据进行 base64 编码
+        return [[NSData dataWithBytesNoCopy:encryptedBytes length:actualOutSize] base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithLineFeed];
+    }
+    free(encryptedBytes);
+    return nil;
+}
+
 @end
 
 @implementation UIColor (XM)
-+ (instancetype)xm_rgb:(CGFloat)r g:(CGFloat)g b:(CGFloat)b {
++ (UIColor *)xm_rgb:(CGFloat)r g:(CGFloat)g b:(CGFloat)b {
     return [self xm_rgba:r g:g b:b a:1];
 }
 
-+ (instancetype)xm_rgba:(CGFloat)r g:(CGFloat)g b:(CGFloat)b a:(CGFloat)a {
++ (UIColor *)xm_rgba:(CGFloat)r g:(CGFloat)g b:(CGFloat)b a:(CGFloat)a {
     return [UIColor colorWithRed:r / 255.0 green:g / 255.0 blue:b / 255.0 alpha:a];
 }
 
-+ (instancetype)xm_hex:(NSString *)hex a:(CGFloat)a {
++ (UIColor *)xm_hex:(NSString *)hex a:(CGFloat)a {
     hex = [hex stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet].uppercaseString;
     UIColor *defaultColor = [UIColor clearColor];
     if (hex.length < 6) {
@@ -225,7 +287,7 @@
 
 
 @implementation UIImage (XM)
-+ (instancetype)xm_colorImage:(UIColor *)color size:(CGSize)size scale:(CGFloat)scale {
++ (UIImage *)xm_colorImage:(UIColor *)color size:(CGSize)size scale:(CGFloat)scale {
     UIGraphicsBeginImageContextWithOptions(size, NO, scale);
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextSetFillColorWithColor(context, color.CGColor);
@@ -235,7 +297,7 @@
     return image;
 }
 
-+ (instancetype)xm_QRImageWithString:(NSString *)string size:(CGSize)size {
++ (UIImage *)xm_QRImageWithString:(NSString *)string size:(CGSize)size {
     /**
      "CIAttributeFilterAvailable_Mac" = "10.9";
      "CIAttributeFilterAvailable_iOS" = 7;
@@ -268,7 +330,7 @@
     return [self _hdImageWithCIImage:image size:size];
 }
 
-+ (instancetype)xm_QRImageWithString:(NSString *)string size:(CGSize)size QRColor:(UIColor *)QRColor backgroundColor:(UIColor *)backgroundColor {
++ (UIImage *)xm_QRImageWithString:(NSString *)string size:(CGSize)size QRColor:(UIColor *)QRColor backgroundColor:(UIColor *)backgroundColor {
     CIFilter *filter = [CIFilter filterWithName:@"CIQRCodeGenerator"];
     
     [filter setDefaults];
@@ -279,7 +341,7 @@
     return [self _hdImageWithCIImage:image size:size QRColor:QRColor backgroundColor:backgroundColor];
 }
 
-+ (instancetype)_hdImageWithCIImage:(CIImage *)ciImage size:(CGSize)size {
++ (UIImage *)_hdImageWithCIImage:(CIImage *)ciImage size:(CGSize)size {
     CGRect extent = CGRectIntegral(ciImage.extent);
     CGFloat scale = MIN(size.width / extent.size.width, size.height / extent.size.height);
     size_t width = extent.size.width * scale;
@@ -298,7 +360,7 @@
     return image;
 }
 
-+ (instancetype)_hdImageWithCIImage:(CIImage *)ciImage size:(CGSize)size QRColor:(UIColor *)QRColor backgroundColor:(UIColor *)backgroundColor {
++ (UIImage *)_hdImageWithCIImage:(CIImage *)ciImage size:(CGSize)size QRColor:(UIColor *)QRColor backgroundColor:(UIColor *)backgroundColor {
     /**
      "CIAttributeFilterAvailable_Mac" = "10.4";
      "CIAttributeFilterAvailable_iOS" = 5;
@@ -348,7 +410,7 @@
     return image;
 }
 
-- (instancetype)xm_addWaterImage:(UIImage *)waterImage {
+- (UIImage *)xm_addWaterImage:(UIImage *)waterImage {
     UIGraphicsBeginImageContextWithOptions(self.size, NO, UIScreen.mainScreen.scale);
     [self drawInRect:CGRectMake(0, 0, self.size.width, self.size.height)];
     
@@ -358,7 +420,7 @@
     return newImage;
 }
 
-- (instancetype)xm_imageScaleMinBorderLength:(CGFloat)minBorderLength {
+- (UIImage *)xm_imageScaleMinBorderLength:(CGFloat)minBorderLength {
     CGSize size = CGSizeZero;
     if (self.size.width <= self.size.height) {
         size.width = minBorderLength;
@@ -374,7 +436,7 @@
     return image;
 }
 
-- (instancetype)xm_setColor:(UIColor *)color forBaseColor:(UIColor *)baseColor {
+- (UIImage *)xm_setColor:(UIColor *)color forBaseColor:(UIColor *)baseColor {
     size_t width = CGImageGetWidth(self.CGImage);
     size_t height = CGImageGetHeight(self.CGImage);
     size_t bytesPerRow = width * 4;
@@ -417,7 +479,7 @@ void dataProviderReleaseDataCallback(void * __nullable info,
     }
 }
 
-- (instancetype)xm_imageFixOrientation {
+- (UIImage *)xm_imageFixOrientation {
     // No-op if the orientation is already correct
     if (self.imageOrientation == UIImageOrientationUp)
         return self;
@@ -493,7 +555,7 @@ void dataProviderReleaseDataCallback(void * __nullable info,
     return img;
 }
 
-- (instancetype)xm_decodeImage {
+- (UIImage *)xm_decodeImage {
     CGImageRef imageRef = self.CGImage;
     if (imageRef == NULL) {
         return nil;
@@ -516,7 +578,7 @@ void dataProviderReleaseDataCallback(void * __nullable info,
     return nil;
 }
 
-- (instancetype)xm_imageRotatedByDegrees:(CGFloat)degrees {
+- (UIImage *)xm_imageRotatedByDegrees:(CGFloat)degrees {
     
     CGFloat width = CGImageGetWidth(self.CGImage);
     CGFloat height = CGImageGetHeight(self.CGImage);
@@ -538,7 +600,7 @@ void dataProviderReleaseDataCallback(void * __nullable info,
     return newImage;
 }
 
-+ (instancetype)xm_gradientImageWithSize:(CGSize)size colors:(NSArray<UIColor *> *)colors locations:(NSArray<NSNumber *> *)locations startPoint:(CGPoint)startPoint endPoint:(CGPoint)endPoint {
++ (UIImage *)xm_gradientImageWithSize:(CGSize)size colors:(NSArray<UIColor *> *)colors locations:(NSArray<NSNumber *> *)locations startPoint:(CGPoint)startPoint endPoint:(CGPoint)endPoint {
     if (colors.count > 0 && locations.count > 0) {
         UIGraphicsBeginImageContext(size);
         CGContextRef context = UIGraphicsGetCurrentContext();
@@ -566,24 +628,24 @@ void dataProviderReleaseDataCallback(void * __nullable info,
     return nil;
 }
 
-+ (instancetype)xm_stretchedWithImageName:(NSString *)name {
++ (UIImage *)xm_stretchedWithImageName:(NSString *)name {
     UIImage *image = [UIImage imageNamed:name];
     NSInteger leftCap = image.size.width * 0.5;
     NSInteger topCap = image.size.height * 0.5;
     return [image stretchableImageWithLeftCapWidth:leftCap topCapHeight:topCap];
 }
 
-- (instancetype)xm_stretched {
+- (UIImage *)xm_stretched {
     NSInteger leftCap = self.size.width * 0.5;
     NSInteger topCap = self.size.height * 0.5;
     return [self stretchableImageWithLeftCapWidth:leftCap topCapHeight:topCap];
 }
 
-- (instancetype)xm_imageByRoundCornerRadius:(CGFloat)radius {
+- (UIImage *)xm_imageByRoundCornerRadius:(CGFloat)radius {
     return [self xm_imageByRoundCornerRadius:radius borderWidth:0 borderColor:nil];
 }
 
-- (instancetype)xm_imageByRoundCornerRadius:(CGFloat)radius
+- (UIImage *)xm_imageByRoundCornerRadius:(CGFloat)radius
                                 borderWidth:(CGFloat)borderWidth
                                 borderColor:(UIColor *)borderColor {
     return [self xm_imageByRoundCornerRadius:radius
@@ -593,7 +655,7 @@ void dataProviderReleaseDataCallback(void * __nullable info,
                               borderLineJoin:kCGLineJoinMiter];
 }
 
-- (instancetype)xm_imageByRoundCornerRadius:(CGFloat)radius
+- (UIImage *)xm_imageByRoundCornerRadius:(CGFloat)radius
                                     corners:(UIRectCorner)corners
                                 borderWidth:(CGFloat)borderWidth
                                 borderColor:(UIColor *)borderColor
@@ -706,7 +768,7 @@ void dataProviderReleaseDataCallback(void * __nullable info,
 @end
 
 @implementation UIFont (XM)
-+ (instancetype)xm_fontOfSize:(CGFloat)size {
++ (UIFont *)xm_fontOfSize:(CGFloat)size {
     if ([UIScreen xm_isIPhone320_480]) {
         return [UIFont systemFontOfSize:size-1];
     }
@@ -725,27 +787,27 @@ void dataProviderReleaseDataCallback(void * __nullable info,
     return [UIFont systemFontOfSize:size];
 }
 
-+ (instancetype)xm_font1 {
++ (UIFont *)xm_font1 {
     return [self xm_fontOfSize:17];
 }
 
-+ (instancetype)xm_font2 {
++ (UIFont *)xm_font2 {
     return [self xm_fontOfSize:16];
 }
 
-+ (instancetype)xm_font3 {
++ (UIFont *)xm_font3 {
     return [self xm_fontOfSize:15];
 }
 
-+ (instancetype)xm_font4 {
++ (UIFont *)xm_font4 {
     return [self xm_fontOfSize:14];
 }
 
-+ (instancetype)xm_font5 {
++ (UIFont *)xm_font5 {
     return [self xm_fontOfSize:13];
 }
 
-+ (instancetype)xm_font6 {
++ (UIFont *)xm_font6 {
     return [self xm_fontOfSize:12];
 }
 
@@ -834,7 +896,7 @@ void dataProviderReleaseDataCallback(void * __nullable info,
     self.layer.cornerRadius = xm_cornerRadius;
 }
 
-+ (instancetype)xm_subview:(Class)cls view:(UIView *)view {
++ (UIView *)xm_subview:(Class)cls view:(UIView *)view {
     for (UIView *subview in view.subviews) {
         if ([subview isKindOfClass:cls]) {
             return subview;
@@ -848,11 +910,11 @@ void dataProviderReleaseDataCallback(void * __nullable info,
     return nil;
 }
 
-- (instancetype)xm_subview:(Class)cls {
+- (UIView *)xm_subview:(Class)cls {
     return [UIView xm_subview:cls view:self];
 }
 
-+ (instancetype)xm_superview:(Class)cls view:(UIView *)view {
++ (UIView *)xm_superview:(Class)cls view:(UIView *)view {
     if ([view isKindOfClass:cls]) {
         return view;
     }
@@ -863,7 +925,7 @@ void dataProviderReleaseDataCallback(void * __nullable info,
     return nil;
 }
 
-- (instancetype)xm_superview:(Class)cls {
+- (UIView *)xm_superview:(Class)cls {
     return [UIView xm_superview:cls view:self];
 }
 
