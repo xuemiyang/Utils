@@ -52,10 +52,24 @@
     return item ? item.height : height(40);
 }
 
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+    if (_tableHeightForHeader) {
+        return _tableHeightForHeader(tableView, section);
+    }
+    return CGFLOAT_MIN;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
+    if (_tableHeightForFooter) {
+        return _tableHeightForFooter(tableView, section);
+    }
+    return CGFLOAT_MIN;
+}
+
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     TableItem *item = [_dataSource itemAtIndexPath:indexPath];
-    if (item && _tableViewDidSelect) {
-        _tableViewDidSelect(tableView, indexPath, item);
+    if (item && _tableViewDidSelectRow) {
+        _tableViewDidSelectRow(tableView, indexPath, item);
     }
 }
 
@@ -152,8 +166,8 @@
 #pragma mark - UICollectionViewDelegateFlowLayout
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
     CollectItem *item = [_dataSource itemAtIndexPath:indexPath];
-    if (item && _collectionViewDidSelect) {
-        _collectionViewDidSelect(collectionView, indexPath, item);
+    if (item && _collectionViewDidSelectItem) {
+        _collectionViewDidSelectItem(collectionView, indexPath, item);
     }
 }
 

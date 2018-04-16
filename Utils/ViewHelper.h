@@ -35,7 +35,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) UITableView *tableView;
 @property (nonatomic, strong) id<TableItemsFactoryProtocol> itemsFactory;
 @property (nonatomic, strong, readonly) TableDataSource *dataSource;
-@property (nonatomic, copy) void (^tableViewDidSelect)(UITableView *tableView, NSIndexPath *indexPath, TableItem *item);
+@property (nonatomic, copy) void (^tableViewDidSelectRow)(UITableView *tableView, NSIndexPath *indexPath, TableItem *item);
+@property (nonatomic, copy) CGFloat (^tableHeightForHeader)(UITableView *tableView, NSInteger section);
+@property (nonatomic, copy) CGFloat (^tableHeightForFooter)(UITableView *tableView, NSInteger section);
 - (void)updateTableView;
 - (void)updateDataSource;
 - (void)setupTableUIHelper:(id<ViewHelper, TableUIHelper>)helper;
@@ -52,7 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) UICollectionView *collectionView;
 @property (nonatomic, strong) id<CollectionItemsFactoryProtocol> itemsFactory;
 @property (nonatomic, strong, readonly) CollectDataSource *dataSource;
-@property (nonatomic, copy) void (^collectionViewDidSelect)(UICollectionView *collectionView, NSIndexPath *indexPath, CollectItem *item);
+@property (nonatomic, copy) void (^collectionViewDidSelectItem)(UICollectionView *collectionView, NSIndexPath *indexPath, CollectItem *item);
 - (void)updateCollectionView;
 - (void)updateDataSource;
 @end
