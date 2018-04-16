@@ -36,8 +36,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) id<TableItemsFactoryProtocol> itemsFactory;
 @property (nonatomic, strong, readonly) TableDataSource *dataSource;
 @property (nonatomic, copy) void (^tableViewDidSelectRow)(UITableView *tableView, NSIndexPath *indexPath, TableItem *item);
-@property (nonatomic, copy) CGFloat (^tableHeightForHeader)(UITableView *tableView, NSInteger section);
-@property (nonatomic, copy) CGFloat (^tableHeightForFooter)(UITableView *tableView, NSInteger section);
+@property (nonatomic, copy) CGFloat (^tableViewHeightForHeader)(UITableView *tableView, NSInteger section);
+@property (nonatomic, copy) CGFloat (^tableViewHeightForFooter)(UITableView *tableView, NSInteger section);
+@property (nonatomic, copy) UIView *(^tableViewViewForHeader)(UITableView *tableView, NSInteger section);
+@property (nonatomic, copy) UIView *(^tableViewViewForFooter)(UITableView *tableView, NSInteger section);
 - (void)updateTableView;
 - (void)updateDataSource;
 - (void)setupTableUIHelper:(id<ViewHelper, TableUIHelper>)helper;

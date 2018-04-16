@@ -144,6 +144,13 @@ static void observeCallback(CFRunLoopObserverRef observer, CFRunLoopActivity act
     return cell;
 }
 
+- (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath {
+    if (_delegate && [_delegate respondsToSelector:@selector(collectDataSource:viewForSupplementaryElementOfKind:atIndexPath:)]) {
+        [_delegate collectDataSource:self viewForSupplementaryElementOfKind:kind atIndexPath:indexPath];
+    }
+    return nil;
+}
+
 
 @end
 

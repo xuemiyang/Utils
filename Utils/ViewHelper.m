@@ -53,17 +53,31 @@
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
-    if (_tableHeightForHeader) {
-        return _tableHeightForHeader(tableView, section);
+    if (_tableViewHeightForHeader) {
+        return _tableViewHeightForHeader(tableView, section);
     }
     return CGFLOAT_MIN;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
-    if (_tableHeightForFooter) {
-        return _tableHeightForFooter(tableView, section);
+    if (_tableViewHeightForFooter) {
+        return _tableViewHeightForFooter(tableView, section);
     }
     return CGFLOAT_MIN;
+}
+
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    if (_tableViewViewForHeader) {
+        return _tableViewViewForHeader(tableView, section);
+    }
+    return nil;
+}
+
+- (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section {
+    if (_tableViewViewForFooter) {
+        return _tableViewViewForFooter(tableView, section);
+    }
+    return nil;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -175,6 +189,7 @@
     CollectItem *item = [_dataSource itemAtIndexPath:indexPath];
     return  item ? item.size : CGSizeZero;
 }
+
 
 @end
 
