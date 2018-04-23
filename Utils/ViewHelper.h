@@ -40,6 +40,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) CGFloat (^tableViewHeightForFooter)(UITableView *tableView, NSInteger section);
 @property (nonatomic, copy) UIView *(^tableViewViewForHeader)(UITableView *tableView, NSInteger section);
 @property (nonatomic, copy) UIView *(^tableViewViewForFooter)(UITableView *tableView, NSInteger section);
+@property (nonatomic, copy) void (^tableViewDidScroll)(UITableView *tableView);
+@property (nonatomic, strong) NSMutableArray<NSMutableArray<void (^)(UITableView *tableView, NSIndexPath *indexPath, TableItem *item)> *> *selectRowHandlers;
+@property (nonatomic, strong) NSMutableArray<NSNumber *> *heightForHeaders;
+@property (nonatomic, strong) NSMutableArray<NSNumber *> *heightForFooters;
+@property (nonatomic, strong) NSMutableArray<UIView *(^)(UITableView *tableView, NSInteger section)> *viewForHeaderHandlers;
+@property (nonatomic, strong) NSMutableArray<UIView *(^)(UITableView *tableView, NSInteger section)> *viewForFooterHandlers;
 - (void)updateTableView;
 - (void)updateDataSource;
 - (void)setupTableUIHelper:(id<ViewHelper, TableUIHelper>)helper;
