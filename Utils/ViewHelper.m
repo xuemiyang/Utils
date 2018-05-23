@@ -52,10 +52,80 @@
     return item ? item.height : height(40);
 }
 
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+    if (_heightForHeaders && section < _heightForHeaders.count) {
+        NSNumber *height = _heightForHeaders[section];
+        if ([height isKindOfClass:[NSNumber class]]) {
+            return height.doubleValue;
+        }
+    }
+    if (_tableViewHeightForHeader) {
+        return _tableViewHeightForHeader(tableView, section);
+    }
+    return CGFLOAT_MIN;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
+    if (_heightForFooters && section < _heightForFooters.count) {
+        NSNumber *height = _heightForFooters[section];
+        if ([height isKindOfClass:[NSNumber class]]) {
+            return height.doubleValue;
+        }
+    }
+    if (_tableViewHeightForFooter) {
+        return _tableViewHeightForFooter(tableView, section);
+    }
+    return CGFLOAT_MIN;
+}
+
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    if (_viewForHeaderHandlers && section < _viewForHeaderHandlers.count) {
+        UIView *(^handler)(UITableView *, NSInteger) = _viewForHeaderHandlers[section];
+        if (![(id)handler isKindOfClass:[NSNull class]]) {
+            return handler(tableView, section);
+        }
+    }
+    if (_tableViewViewForHeader) {
+        return _tableViewViewForHeader(tableView, section);
+    }
+    return nil;
+}
+
+- (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section {
+    if (_viewForFooterHandlers && section < _viewForFooterHandlers.count) {
+        UIView *(^handler)(UITableView *, NSInteger) = _viewForFooterHandlers[section];
+        if (![(id)handler isKindOfClass:[NSNull class]]) {
+            return handler(tableView, section);
+        }
+    }
+    if (_tableViewViewForFooter) {
+        return _tableViewViewForFooter(tableView, section);
+    }
+    return nil;
+}
+
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     TableItem *item = [_dataSource itemAtIndexPath:indexPath];
-    if (item && _tableViewDidSelect) {
-        _tableViewDidSelect(tableView, indexPath, item);
+    if (item) {
+        if (_selectRowHandlers) {
+            if (indexPath.section < _selectRowHandlers.count) {
+                NSArray *sectionHandlers = _selectRowHandlers[indexPath.section];
+                if (indexPath.row < sectionHandlers.count) {
+                    void (^handler)(UITableView *, NSIndexPath *, TableItem *) = sectionHandlers[indexPath.row];
+                    if (![(id)handler isKindOfClass:[NSNull class]]) {
+                        handler(tableView, indexPath, item);
+                    }
+                }
+            }
+        } else if (_tableViewDidSelectRow) {
+            _tableViewDidSelectRow(tableView, indexPath, item);
+        }
+    }
+}
+
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    if (_tableViewDidScroll) {
+        _tableViewDidScroll((UITableView *)scrollView);
     }
 }
 
@@ -152,8 +222,8 @@
 #pragma mark - UICollectionViewDelegateFlowLayout
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
     CollectItem *item = [_dataSource itemAtIndexPath:indexPath];
-    if (item && _collectionViewDidSelect) {
-        _collectionViewDidSelect(collectionView, indexPath, item);
+    if (item && _collectionViewDidSelectItem) {
+        _collectionViewDidSelectItem(collectionView, indexPath, item);
     }
 }
 
@@ -161,6 +231,7 @@
     CollectItem *item = [_dataSource itemAtIndexPath:indexPath];
     return  item ? item.size : CGSizeZero;
 }
+
 
 @end
 

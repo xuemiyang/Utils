@@ -30,7 +30,6 @@
     if (self = [super init]) {
         _rows = @[];
         _items = @[];
-        [_collectionView insertItemsAtIndexPaths:@[]];
         _setupCellHandlers = [NSMutableDictionary dictionary];
         if ([NSThread isMainThread]) {
             [self _addRunLoopObserver];
@@ -143,6 +142,13 @@ static void observeCallback(CFRunLoopObserverRef observer, CFRunLoopActivity act
         [_delegate collectDataSource:self withCell:cell cellForRowAtIndexPath:indexPath];
     }
     return cell;
+}
+
+- (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath {
+    if (_delegate && [_delegate respondsToSelector:@selector(collectDataSource:viewForSupplementaryElementOfKind:atIndexPath:)]) {
+        [_delegate collectDataSource:self viewForSupplementaryElementOfKind:kind atIndexPath:indexPath];
+    }
+    return nil;
 }
 
 

@@ -15,29 +15,55 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readonly) BOOL xm_isNull;
 @property (nonatomic, assign, readonly) BOOL xm_isPhone;
 @property (nonatomic, assign, readonly) BOOL xm_isNumberAndChar;
+@property (nonatomic, assign, readonly) BOOL xm_isEmail;
 @property (nonatomic, copy, readonly) NSString *xm_urlEncodeString;
+- (NSString *)xm_md5;
+- (NSString *)xm_sha1;
+- (NSString *)xm_sha256;
+- (NSString *)xm_hmacWithKey:(NSString *)key;
++ (NSString *)xm_encryptedKeyUsingAES;
++ (NSString *)xm_encryptedKeyUsing3DES;/// 3DES
++ (NSString *)xm_encryptedKeyUsingMAC;
++ (NSString *)xm_encryptedKeyWithLength:(size_t)length;
+- (NSString * _Nullable)xm_decryptAESWithKey:(NSString *)key initVector:(NSString *)initVector;
+- (NSString * _Nullable)xm_encryptAESWithKey:(NSString *)key initVector:(NSString *)initVector;
+
 - (CGSize)xm_size:(UIFont *)font;
 - (CGSize)xm_size:(UIFont *)font size:(CGSize)size mode:(NSLineBreakMode)mode;
 - (CGFloat)xm_height:(UIFont *)font width:(CGFloat)width;
-- (instancetype)xm_makeDotAppearOnce;
-+ (instancetype)xm_nullString:(UIFont *)font width:(CGFloat)width;
+- (NSString *)xm_makeDotAppearOnce;
+- (NSString *)xm_trim;
++ (NSString *)xm_nullString:(UIFont *)font width:(CGFloat)width;
 @end
 
 @interface UIColor (XM)
-+ (instancetype)xm_rgb:(CGFloat)r g:(CGFloat)g b:(CGFloat)b;
-+ (instancetype)xm_rgba:(CGFloat)r g:(CGFloat)g b:(CGFloat)b a:(CGFloat)a;
-+ (instancetype)xm_hex:(NSString *)hex a:(CGFloat)a;
++ (UIColor *)xm_rgb:(CGFloat)r g:(CGFloat)g b:(CGFloat)b;
++ (UIColor *)xm_rgba:(CGFloat)r g:(CGFloat)g b:(CGFloat)b a:(CGFloat)a;
++ (UIColor *)xm_hex:(NSString *)hex a:(CGFloat)a;
 @end
 
 @interface UIImage (XM)
-+ (instancetype)xm_colorImage:(UIColor *)color size:(CGSize)size scale:(CGFloat)scale;
-+ (instancetype)xm_QRImageWithString:(NSString *)string size:(CGSize)size;
-+ (instancetype)xm_QRImageWithString:(NSString *)string size:(CGSize)size QRColor:(UIColor *)QRColor backgroundColor:(UIColor *)backgroundColor;
-- (instancetype)xm_setColor:(UIColor *)color forBaseColor:(UIColor *)baseColor;
-- (instancetype)xm_addWaterImage:(UIImage *)waterImage;
-- (instancetype)xm_imageScaleMinBorderLength:(CGFloat)minBorderLength;
-- (instancetype)xm_imageFixOrientation;
-- (instancetype)xm_decodeImage;
++ (UIImage *)xm_colorImage:(UIColor *)color size:(CGSize)size scale:(CGFloat)scale;
++ (UIImage *)xm_QRImageWithString:(NSString *)string size:(CGSize)size;
++ (UIImage *)xm_QRImageWithString:(NSString *)string size:(CGSize)size QRColor:(UIColor *)QRColor backgroundColor:(UIColor *)backgroundColor;
++ (UIImage *)xm_gradientImageWithSize:(CGSize)size colors:(NSArray<UIColor *> *)colors locations:(NSArray<NSNumber *> *)locations startPoint:(CGPoint)startPoint endPoint:(CGPoint)endPoint;
++ (UIImage *)xm_stretchedWithImageName:(NSString *)name;
+- (UIImage *)xm_stretched;
+- (UIImage *)xm_setColor:(UIColor *)color forBaseColor:(UIColor *)baseColor;
+- (UIImage *)xm_addWaterImage:(UIImage *)waterImage;
+- (UIImage *)xm_imageScaleMinBorderLength:(CGFloat)minBorderLength;
+- (UIImage *)xm_imageFixOrientation;
+- (UIImage *)xm_decodeImage;
+- (UIImage *)xm_imageRotatedByDegrees:(CGFloat)degrees;
+- (UIImage *)xm_imageByRoundCornerRadius:(CGFloat)radius;
+- (UIImage *)xm_imageByRoundCornerRadius:(CGFloat)radius
+                                borderWidth:(CGFloat)borderWidth
+                                borderColor:(UIColor * _Nullable)borderColor;
+- (UIImage *)xm_imageByRoundCornerRadius:(CGFloat)radius
+                                    corners:(UIRectCorner)corners
+                                borderWidth:(CGFloat)borderWidth
+                                borderColor:(UIColor * _Nullable)borderColor
+                             borderLineJoin:(CGLineJoin)borderLineJoin;
 @end
 
 @interface NSData (XM)
@@ -93,13 +119,13 @@ CG_INLINE CGFloat height(CGFloat h) {
 }
 
 @interface UIFont (XM)
-+ (instancetype)xm_fontOfSize:(CGFloat)size;
-+ (instancetype)xm_font1;
-+ (instancetype)xm_font2;
-+ (instancetype)xm_font3;
-+ (instancetype)xm_font4;
-+ (instancetype)xm_font5;
-+ (instancetype)xm_font6;
++ (UIFont *)xm_fontOfSize:(CGFloat)size;
++ (UIFont *)xm_font1;
++ (UIFont *)xm_font2;
++ (UIFont *)xm_font3;
++ (UIFont *)xm_font4;
++ (UIFont *)xm_font5;
++ (UIFont *)xm_font6;
 @end
 
 
@@ -112,10 +138,10 @@ CG_INLINE CGFloat height(CGFloat h) {
 @property (nonatomic, assign) CGFloat xm_centerY;
 @property (nonatomic, assign) CGPoint xm_anchorPoint;
 @property (nonatomic, assign) CGFloat xm_cornerRadius;
-+ (_Nullable instancetype)xm_subview:(Class)cls view:(UIView *)view;
-- (_Nullable instancetype)xm_subview:(Class)cls;
-+ (_Nullable instancetype)xm_superview:(Class)cls view:(UIView *)view;
-- (_Nullable instancetype)xm_superview:(Class)cls;
++ (UIView * _Nullable)xm_subview:(Class)cls view:(UIView *)view;
+- (UIView * _Nullable)xm_subview:(Class)cls;
++ (UIView * _Nullable)xm_superview:(Class)cls view:(UIView *)view;
+- (UIView * _Nullable)xm_superview:(Class)cls;
 @property (nonatomic, weak, nullable, readonly) UITableViewCell *xm_tableViewCell;
 @property (nonatomic, strong, nullable, readonly) UIImage * xm_cutImage;
 @end

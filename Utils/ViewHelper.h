@@ -35,7 +35,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) UITableView *tableView;
 @property (nonatomic, strong) id<TableItemsFactoryProtocol> itemsFactory;
 @property (nonatomic, strong, readonly) TableDataSource *dataSource;
-@property (nonatomic, copy) void (^tableViewDidSelect)(UITableView *tableView, NSIndexPath *indexPath, TableItem *item);
+@property (nonatomic, copy) void (^tableViewDidSelectRow)(UITableView *tableView, NSIndexPath *indexPath, TableItem *item);
+@property (nonatomic, copy) CGFloat (^tableViewHeightForHeader)(UITableView *tableView, NSInteger section);
+@property (nonatomic, copy) CGFloat (^tableViewHeightForFooter)(UITableView *tableView, NSInteger section);
+@property (nonatomic, copy) UIView *(^tableViewViewForHeader)(UITableView *tableView, NSInteger section);
+@property (nonatomic, copy) UIView *(^tableViewViewForFooter)(UITableView *tableView, NSInteger section);
+@property (nonatomic, copy) void (^tableViewDidScroll)(UITableView *tableView);
+@property (nonatomic, strong) NSMutableArray<NSMutableArray<void (^)(UITableView *tableView, NSIndexPath *indexPath, TableItem *item)> *> *selectRowHandlers;
+@property (nonatomic, strong) NSMutableArray<NSNumber *> *heightForHeaders;
+@property (nonatomic, strong) NSMutableArray<NSNumber *> *heightForFooters;
+@property (nonatomic, strong) NSMutableArray<UIView *(^)(UITableView *tableView, NSInteger section)> *viewForHeaderHandlers;
+@property (nonatomic, strong) NSMutableArray<UIView *(^)(UITableView *tableView, NSInteger section)> *viewForFooterHandlers;
 - (void)updateTableView;
 - (void)updateDataSource;
 - (void)setupTableUIHelper:(id<ViewHelper, TableUIHelper>)helper;
@@ -52,7 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) UICollectionView *collectionView;
 @property (nonatomic, strong) id<CollectionItemsFactoryProtocol> itemsFactory;
 @property (nonatomic, strong, readonly) CollectDataSource *dataSource;
-@property (nonatomic, copy) void (^collectionViewDidSelect)(UICollectionView *collectionView, NSIndexPath *indexPath, CollectItem *item);
+@property (nonatomic, copy) void (^collectionViewDidSelectItem)(UICollectionView *collectionView, NSIndexPath *indexPath, CollectItem *item);
 - (void)updateCollectionView;
 - (void)updateDataSource;
 @end

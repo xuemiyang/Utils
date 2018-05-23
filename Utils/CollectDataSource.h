@@ -29,6 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
 @class CollectDataSource;
 @protocol CollectDataSourceDelegate <NSObject>
 - (void)collectDataSource:(CollectDataSource *)dataSource withCell:(UICollectionViewCell *)cell cellForRowAtIndexPath:(NSIndexPath *)indexPath;
+@optional
+- (void)collectDataSource:(CollectDataSource *)dataSource viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath;
 @end
 
 @interface CollectDataSource : NSObject <UICollectionViewDataSource>
