@@ -12,10 +12,10 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface CollectItem: NSObject
-@property (nonatomic, copy, readonly) NSString *identifier;
+@property (nonatomic, copy) NSString *identifier;
 @property (nonatomic, assign, readonly) Class cellClass;
 @property (nonatomic, assign) CGSize size;
-@property (nonatomic, strong, nullable) NSDictionary<NSString *, id> *extendDic;
+@property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, id> *extendDic;
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
 - (instancetype)initWithCellClass:(Class)cellClass;

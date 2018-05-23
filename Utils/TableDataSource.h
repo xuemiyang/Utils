@@ -12,7 +12,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface TableItem: NSObject
-@property (nonatomic, copy, readonly) NSString *identifier;
+@property (nonatomic, copy) NSString *identifier;
 @property (nonatomic, assign, readonly) Class cellClass;
 @property (nonatomic, strong, nullable) UIImage *image;
 @property (nonatomic, copy, nullable) NSString *title;
@@ -51,6 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSArray<TableItem *> *items;
 @property (nonatomic, weak, nullable) id<TableDataSourceDelegate> delegate;
 @property (nonatomic, weak, readonly) UITableView *tableView;
+- (NSUInteger)indexAtIndexPath:(NSIndexPath *)indexPath;
 - (TableItem * _Nullable)itemAtIndexPath:(NSIndexPath *)indexPath;
 - (NSArray<TableItem *> *)itemsAtSection:(NSUInteger)section;
 - (NSArray<TableItem *> *)itemsAtSection:(NSUInteger)section inRange:(NSRange)range;

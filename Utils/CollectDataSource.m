@@ -10,11 +10,6 @@
 #import <objc/runtime.h>
 
 @implementation CollectItem
-- (instancetype)init {
-    @throw [NSException exceptionWithName:@"CollectItem init error" reason:@"CollectItem must be initialized with a cellClass. Use 'initWithCellClass:' instead." userInfo:nil];
-    return [self initWithCellClass:[UICollectionViewCell class]];
-}
-
 - (instancetype)initWithCellClass:(Class)cellClass {
     if (self = [super init]) {
         _identifier = NSStringFromClass(cellClass);
@@ -24,16 +19,71 @@
 }
 @end
 
+@interface CollectDataSource ()
+@property (nonatomic, assign) CFRunLoopRef runloop;
+@property (nonatomic, assign) CFRunLoopObserverRef observer;
+@property (nonatomic, strong) NSMutableDictionary<NSIndexPath *, void (^)(NSIndexPath *indexPath)> *setupCellHandlers;
+@end
+
 @implementation CollectDataSource
 - (instancetype)init {
     if (self = [super init]) {
         _rows = @[];
         _items = @[];
+        [_collectionView insertItemsAtIndexPaths:@[]];
+        _setupCellHandlers = [NSMutableDictionary dictionary];
+        if ([NSThread isMainThread]) {
+            [self _addRunLoopObserver];
+        } else {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self _addRunLoopObserver];
+            });
+        }
     }
     return self;
 }
 
+- (void)dealloc {
+    CFRunLoopRemoveObserver(_runloop, _observer, kCFRunLoopCommonModes);
+    CFRelease(_observer);
+    _runloop = NULL;
+}
+
 #pragma mark - private
+- (void)_addRunLoopObserver {
+    @autoreleasepool {
+        CFRunLoopRef runloop = CFRunLoopGetCurrent();
+        _runloop = runloop;
+        CFRunLoopObserverContext context = {0, (__bridge void *)(self), NULL, NULL, NULL};
+        CFRunLoopObserverRef observer = CFRunLoopObserverCreate(NULL, kCFRunLoopBeforeWaiting, true, 0, observeCallback, &context);
+        _observer = observer;
+        CFRunLoopAddObserver(runloop, observer, kCFRunLoopCommonModes);
+    }
+}
+
+static void observeCallback(CFRunLoopObserverRef observer, CFRunLoopActivity activity, void *info) {
+    switch (activity) {
+        case kCFRunLoopBeforeWaiting: {
+            if (info == NULL) {
+                return;
+            }
+            CollectDataSource *dataSource = (__bridge CollectDataSource *)(info);
+            if (dataSource.setupCellHandlers.count == 0) {
+                return;
+            }
+            [dataSource.setupCellHandlers enumerateKeysAndObjectsUsingBlock:^(NSIndexPath * _Nonnull key, void (^ _Nonnull obj)(NSIndexPath *), BOOL * _Nonnull stop) {
+                @autoreleasepool {
+                    obj(key);
+                }
+            }];
+            [dataSource.setupCellHandlers removeAllObjects];
+        }
+            break;
+        default:
+            break;
+    }
+}
+
 - (NSUInteger)_indexAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section >= _rows.count) {
         return NSNotFound;
@@ -79,9 +129,16 @@
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     CollectItem *item = [self itemAtIndexPath:indexPath];
-    [collectionView registerNib:[UINib nibWithNibName:item.identifier bundle:nil] forCellWithReuseIdentifier:item.identifier];
+    [collectionView registerNib:[UINib nibWithNibName:NSStringFromClass(item.cellClass) bundle:nil] forCellWithReuseIdentifier:item.identifier];
     UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:item.identifier forIndexPath:indexPath];
-    [self _setItem:item toCell:cell];
+    __weak typeof(self) weakSelf = self;
+    _setupCellHandlers[indexPath] = ^(NSIndexPath *indexPath){
+        CollectItem *item = [weakSelf itemAtIndexPath:indexPath];
+        [weakSelf _setItem:item toCell:cell];
+        if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(collectDataSource:withCell:cellForRowAtIndexPath:)]) {
+            [weakSelf.delegate collectDataSource:weakSelf withCell:cell cellForRowAtIndexPath:indexPath];
+        }
+    };
     if (_delegate && [_delegate respondsToSelector:@selector(collectDataSource:withCell:cellForRowAtIndexPath:)]) {
         [_delegate collectDataSource:self withCell:cell cellForRowAtIndexPath:indexPath];
     }

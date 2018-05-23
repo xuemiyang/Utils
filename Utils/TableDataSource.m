@@ -9,7 +9,9 @@
 #import "TableDataSource.h"
 #import <objc/runtime.h>
 
-@implementation TableItem
+
+@implementation TableItem 
+
 - (instancetype)init {
     @throw [NSException exceptionWithName:@"TableItem init error" reason:@"TableItem must be initialized with a cellClass. Use 'initWithCellClass:' instead." userInfo:nil];
     return [self initWithCellClass:[UITableViewCell class]];
@@ -26,18 +28,31 @@
 }
 @end
 
+@interface TableDataSource ()
+@property (nonatomic, assign) CFRunLoopRef runloop;
+@property (nonatomic, assign) CFRunLoopObserverRef observer;
+@property (nonatomic, strong) NSMutableDictionary<NSIndexPath *, void (^)(NSIndexPath *indexPath)> *setupCellHandlers;
+@end
+
 @implementation TableDataSource
 - (instancetype)init {
     if (self = [super init]) {
         _rows = @[@0];
         _headTitles = @[];
         _items = @[];
+        _setupCellHandlers = [NSMutableDictionary dictionary];
+        if ([NSThread isMainThread]) {
+            [self _addRunLoopObserver];
+        } else {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self _addRunLoopObserver];
+            });
+        }
     }
     return self;
 }
 
-#pragma mark - private
-- (NSUInteger)_indexAtIndexPath:(NSIndexPath *)indexPath {
+- (NSUInteger)indexAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section >= _rows.count) {
         return NSNotFound;
     }
@@ -47,6 +62,47 @@
     }
     index += indexPath.row;
     return index;
+}
+
+- (void)dealloc {
+    CFRunLoopRemoveObserver(_runloop, _observer, kCFRunLoopCommonModes);
+    CFRelease(_observer);
+    _runloop = NULL;
+}
+
+#pragma mark - private
+- (void)_addRunLoopObserver {
+    @autoreleasepool {
+        CFRunLoopRef runloop = CFRunLoopGetCurrent();
+        _runloop = runloop;
+        CFRunLoopObserverContext context = {0, (__bridge void *)(self), NULL, NULL, NULL};
+        CFRunLoopObserverRef observer = CFRunLoopObserverCreate(NULL, kCFRunLoopBeforeWaiting, true, 0, observeCallback, &context);
+        _observer = observer;
+        CFRunLoopAddObserver(runloop, observer, kCFRunLoopCommonModes);
+    }
+}
+
+static void observeCallback(CFRunLoopObserverRef observer, CFRunLoopActivity activity, void *info) {
+    switch (activity) {
+        case kCFRunLoopBeforeWaiting: {
+            if (info == NULL) {
+                return;
+            }
+            TableDataSource *dataSource = (__bridge TableDataSource *)(info);
+            if (dataSource.setupCellHandlers.count == 0) {
+                return;
+            }
+            [dataSource.setupCellHandlers enumerateKeysAndObjectsUsingBlock:^(NSIndexPath * _Nonnull key, void (^ _Nonnull obj)(NSIndexPath *), BOOL * _Nonnull stop) {
+                @autoreleasepool {
+                    obj(key);
+                }
+            }];
+            [dataSource.setupCellHandlers removeAllObjects];
+        }
+            break;
+        default:
+            break;
+    }
 }
 
 - (void)_setItem:(TableItem *)item toCell:(UITableViewCell *)cell {
@@ -80,7 +136,7 @@
 
 #pragma mark - public
 - (TableItem *)itemAtIndexPath:(NSIndexPath *)indexPath {
-    NSUInteger index = [self _indexAtIndexPath:indexPath];
+    NSUInteger index = [self indexAtIndexPath:indexPath];
     if (index == NSNotFound || index >= _items.count) {
         return nil;
     }
@@ -112,7 +168,7 @@
 }
 
 - (void)setItem:(TableItem *)item atIndexPath:(NSIndexPath *)indexPath {
-    NSUInteger index = [self _indexAtIndexPath:indexPath];
+    NSUInteger index = [self indexAtIndexPath:indexPath];
     if (index == NSNotFound || index >= _items.count) {
         return;
     }
@@ -122,7 +178,7 @@
 }
 
 - (void)deleteCellAtIndexPath:(NSIndexPath *)indexPath withAnimation:(UITableViewRowAnimation)animation {
-    NSUInteger index = [self _indexAtIndexPath:indexPath];
+    NSUInteger index = [self indexAtIndexPath:indexPath];
     if (index == NSNotFound || index >= _items.count) {
         return;
     }
@@ -203,7 +259,7 @@
 }
 
 - (void)insertCellAtIndexPath:(NSIndexPath *)indexPath withItem:(TableItem *)item withAnimation:(UITableViewRowAnimation)animation {
-    NSUInteger index = [self _indexAtIndexPath:indexPath];
+    NSUInteger index = [self indexAtIndexPath:indexPath];
     if (index == NSNotFound || index >= _items.count) {
         return;
     }
@@ -251,10 +307,18 @@
     TableItem *item = [self itemAtIndexPath:indexPath];
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:item.identifier];
     if (!cell) {
-        [tableView registerNib:[UINib nibWithNibName:item.identifier bundle:nil] forCellReuseIdentifier:item.identifier];
+        [tableView registerNib:[UINib nibWithNibName:NSStringFromClass(item.cellClass) bundle:nil] forCellReuseIdentifier:item.identifier];
         cell = [tableView dequeueReusableCellWithIdentifier:item.identifier];
     }
-    [self _setItem:item toCell:cell];
+    __weak typeof(self) weakSelf = self;
+    _setupCellHandlers[indexPath] = ^(NSIndexPath *indexPath){
+        TableItem *item = [weakSelf itemAtIndexPath:indexPath];
+        [weakSelf _setItem:item toCell:cell];
+        if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(tableDataSource:withCell:cellForRowAtIndexPath:)]) {
+            [weakSelf.delegate tableDataSource:weakSelf withCell:cell cellForRowAtIndexPath:indexPath];
+        }
+    };
+    cell.imageView.image = item.image;
     if (_delegate && [_delegate respondsToSelector:@selector(tableDataSource:withCell:cellForRowAtIndexPath:)]) {
         [_delegate tableDataSource:self withCell:cell cellForRowAtIndexPath:indexPath];
     }

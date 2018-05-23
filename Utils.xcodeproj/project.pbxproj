@@ -14,11 +14,11 @@
 		5DC580681FFA636F005A383A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5DC580661FFA636F005A383A /* LaunchScreen.storyboard */; };
 		5DC5806B1FFA636F005A383A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 5DC5806A1FFA636F005A383A /* main.m */; };
 		5DC580751FFA636F005A383A /* UtilsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 5DC580741FFA636F005A383A /* UtilsTests.m */; };
-		5DC580851FFA63CA005A383A /* CollectDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 5DC5807F1FFA63C9005A383A /* CollectDataSource.m */; };
-		5DC580861FFA63CA005A383A /* TableDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 5DC580811FFA63C9005A383A /* TableDataSource.m */; };
 		5DC580871FFA63CA005A383A /* TagsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5DC580831FFA63CA005A383A /* TagsView.m */; };
 		5DC5808A1FFA63D4005A383A /* Category.m in Sources */ = {isa = PBXBuildFile; fileRef = 5DC580881FFA63D4005A383A /* Category.m */; };
 		5DC5808D1FFA646E005A383A /* ViewHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 5DC5808C1FFA646E005A383A /* ViewHelper.m */; };
+		5DEDA96720B39D1A003BE877 /* CollectDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 5DEDA96320B39D19003BE877 /* CollectDataSource.m */; };
+		5DEDA96820B39D1A003BE877 /* TableDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 5DEDA96520B39D1A003BE877 /* TableDataSource.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,16 +45,16 @@
 		5DC580701FFA636F005A383A /* UtilsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = UtilsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		5DC580741FFA636F005A383A /* UtilsTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UtilsTests.m; sourceTree = "<group>"; };
 		5DC580761FFA636F005A383A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		5DC5807F1FFA63C9005A383A /* CollectDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CollectDataSource.m; sourceTree = "<group>"; };
-		5DC580801FFA63C9005A383A /* CollectDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CollectDataSource.h; sourceTree = "<group>"; };
-		5DC580811FFA63C9005A383A /* TableDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TableDataSource.m; sourceTree = "<group>"; };
 		5DC580821FFA63C9005A383A /* TagsView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TagsView.h; sourceTree = "<group>"; };
 		5DC580831FFA63CA005A383A /* TagsView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TagsView.m; sourceTree = "<group>"; };
-		5DC580841FFA63CA005A383A /* TableDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableDataSource.h; sourceTree = "<group>"; };
 		5DC580881FFA63D4005A383A /* Category.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Category.m; sourceTree = "<group>"; };
 		5DC580891FFA63D4005A383A /* Category.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Category.h; sourceTree = "<group>"; };
 		5DC5808B1FFA646E005A383A /* ViewHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ViewHelper.h; sourceTree = "<group>"; };
 		5DC5808C1FFA646E005A383A /* ViewHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ViewHelper.m; sourceTree = "<group>"; };
+		5DEDA96320B39D19003BE877 /* CollectDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CollectDataSource.m; sourceTree = "<group>"; };
+		5DEDA96420B39D19003BE877 /* CollectDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CollectDataSource.h; sourceTree = "<group>"; };
+		5DEDA96520B39D1A003BE877 /* TableDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TableDataSource.m; sourceTree = "<group>"; };
+		5DEDA96620B39D1A003BE877 /* TableDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableDataSource.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,10 +100,10 @@
 				5DC5808C1FFA646E005A383A /* ViewHelper.m */,
 				5DC580891FFA63D4005A383A /* Category.h */,
 				5DC580881FFA63D4005A383A /* Category.m */,
-				5DC580801FFA63C9005A383A /* CollectDataSource.h */,
-				5DC5807F1FFA63C9005A383A /* CollectDataSource.m */,
-				5DC580841FFA63CA005A383A /* TableDataSource.h */,
-				5DC580811FFA63C9005A383A /* TableDataSource.m */,
+				5DEDA96420B39D19003BE877 /* CollectDataSource.h */,
+				5DEDA96320B39D19003BE877 /* CollectDataSource.m */,
+				5DEDA96620B39D1A003BE877 /* TableDataSource.h */,
+				5DEDA96520B39D1A003BE877 /* TableDataSource.m */,
 				5DC580821FFA63C9005A383A /* TagsView.h */,
 				5DC580831FFA63CA005A383A /* TagsView.m */,
 				5DC5805B1FFA636F005A383A /* AppDelegate.h */,
@@ -230,14 +230,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5DEDA96720B39D1A003BE877 /* CollectDataSource.m in Sources */,
 				5DC5808A1FFA63D4005A383A /* Category.m in Sources */,
 				5DC580601FFA636F005A383A /* ViewController.m in Sources */,
 				5DC5808D1FFA646E005A383A /* ViewHelper.m in Sources */,
 				5DC580871FFA63CA005A383A /* TagsView.m in Sources */,
-				5DC580861FFA63CA005A383A /* TableDataSource.m in Sources */,
 				5DC5806B1FFA636F005A383A /* main.m in Sources */,
 				5DC5805D1FFA636F005A383A /* AppDelegate.m in Sources */,
-				5DC580851FFA63CA005A383A /* CollectDataSource.m in Sources */,
+				5DEDA96820B39D1A003BE877 /* TableDataSource.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
